@@ -7,6 +7,7 @@ on:
       - '.github/workflows/backend.yml'
       - 'package.json'
       - 'src-tauri/**'
+      - 'tests/**'
       - 'updater/**'
     branches:
       - main
@@ -15,6 +16,7 @@ on:
       - '.github/workflows/backend.yml'
       - 'package.json'
       - 'src-tauri/**'
+      - 'tests/**'
       - 'updater/**'
 
 concurrency:
@@ -25,6 +27,18 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
+  tauri-permissions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check Tauri permission policy
+        run: node --test tests/tauri-permissions.test.mjs
+
   rustfmt:
     runs-on: ${{ matrix.platform }}
 

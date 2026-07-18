@@ -7,6 +7,7 @@
     "dev": "pnpm build:js && tauri dev",
     "build:updater": "cd updater && cargo build --release && cd .. && cp updater/target/release/updater src-tauri/updater",
     "preview": "vite preview",
+    "test:tauri-permissions": "node --test tests/tauri-permissions.test.mjs",
     "tauri": "tauri",
     "format": "cargo fmt --manifest-path ./src-tauri/Cargo.toml --all && prettier src -w",
     "format:updater": "cargo fmt --manifest-path ./updater/Cargo.toml --all",
