@@ -20,6 +20,10 @@ Acord is in early development. Builds and releases are not available yet.
 - Low resource usage and strong performance.
 - Compatibility with themes, plugins, and useful components from the Dorion/Shelter ecosystem.
 
+## Security
+
+Client mods, plugins, and themes are disabled by default. See the [security model](docs/security.md) before enabling them.
+
 ## Credits
 
 - [Dorion](https://github.com/SpikeHD/Dorion), the project this fork originated from.

@@ -56,15 +56,15 @@ async function readConfig(): Promise<AppConfig> {
 
   window.__DORION_CONFIG__ = await readConfig()
 
-  const debug = !window.__DORION_CONFIG__.client_plugins
+  const clientPluginsEnabled = window.__DORION_CONFIG__.client_plugins === true
   console.log(window.__DORION_CONFIG__)
   const INJECTED_PLUGIN_OPTIONS = {
     isVisible: true,
-    allowedActions: { toggle: debug },
+    allowedActions: { toggle: clientPluginsEnabled },
     loaderName: 'Acord'
   }
 
-  window.SHELTER_INJECTOR_PLUGINS = {
+  if (clientPluginsEnabled) window.SHELTER_INJECTOR_PLUGINS = {
     'Antitrack': ['https://yellowsink.github.io/shelter-plugins/antitrack/', {
       ...INJECTED_PLUGIN_OPTIONS,
       allowedActions: {
@@ -98,7 +98,9 @@ async function init() {
 
   window.Dorion.shouldShowUnreadBadge = window.__DORION_CONFIG__.unread_badge
 
-  await invoke<void>('load_plugins')
+  if (window.__DORION_CONFIG__.client_plugins === true) {
+    await invoke<void>('load_plugins')
+  }
 
   const version = await invoke<string>('app_version')
 

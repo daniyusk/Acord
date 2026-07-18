@@ -1,12 +1,6 @@
-use include_flate::flate;
 use phf::phf_map;
 
-use crate::{
-  config::{get_config, write_config_file},
-  log,
-};
-
-flate!(pub static FALLBACK: str from "./injection/shelter.js");
+use crate::{config::get_config, log};
 
 pub struct ClientMod {
   script: &'static str,
@@ -50,25 +44,7 @@ pub fn available_mods() -> Vec<String> {
 }
 
 pub fn load_mods_js() -> String {
-  let mut enabled_mods = enabled_client_mods();
-
-  // if enabled_mods does not include shelter, add it and save the config
-  if !enabled_mods.contains(&"Shelter".to_string()) {
-    log!("Shelter not detected as client mod: adding to config!");
-    let mut config = get_config();
-    // add shelter to the enabled mods while keeping the others. shelter is always first
-    enabled_mods.insert(0, "Shelter".to_string());
-    config.client_mods = Option::from(enabled_mods.clone());
-
-    match serde_json::to_string(&config) {
-      Ok(config) => {
-        if let Err(error) = write_config_file(config) {
-          log!("Failed to persist client mod configuration: {error}");
-        }
-      }
-      Err(error) => log!("Failed to serialize client mod configuration: {error}"),
-    }
-  }
+  let enabled_mods = enabled_client_mods();
 
   let mut exec = String::new();
   let mut tasks = Vec::new();
@@ -91,11 +67,6 @@ pub fn load_mods_js() -> String {
         Err(e) => {
           log!("Failed to load client mod JS for {}: {:?}", mod_name, e);
 
-          if mod_name == "Shelter" {
-            log!("Shelter detected: loading fallback!");
-            return FALLBACK.clone();
-          }
-
           return String::new();
         }
       };
@@ -108,11 +79,6 @@ pub fn load_mods_js() -> String {
           mod_name,
           status
         );
-
-        if mod_name == "Shelter" {
-          log!("Shelter detected: loading fallback!");
-          return FALLBACK.clone();
-        }
 
         return String::new();
       }

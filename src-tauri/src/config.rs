@@ -90,9 +90,9 @@ impl Config {
       disable_hardware_accel: Option::from(false),
       blur: Option::from("none".to_string()),
       blur_css: Option::from(true),
-      client_mods: Option::from(vec!["Shelter".to_string()]),
+      client_mods: Option::from(vec![]),
       unread_badge: Option::from(true),
-      client_plugins: Option::from(true),
+      client_plugins: Option::from(false),
       tray_icon_enabled: Option::from(true),
       proxy_uri: Option::from("".to_string()),
 

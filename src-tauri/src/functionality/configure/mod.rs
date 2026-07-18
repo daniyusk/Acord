@@ -48,7 +48,9 @@ pub fn configure(window: &tauri::WebviewWindow) {
     .restore_state(StateFlags::all())
     .unwrap_or_else(|e| log!("Failed to restore window state: {}", e));
 
-  load_plugins(window.clone(), Some(true));
+  if _config.client_plugins.unwrap_or(false) {
+    load_plugins(window.clone(), Some(true));
+  }
 
   // begin the RPC server if needed
   #[cfg(feature = "rpc")]
@@ -61,7 +63,9 @@ pub fn configure(window: &tauri::WebviewWindow) {
   }
 
   // Listen for idle change
-  start_idle_watcher(window);
+  if _config.client_plugins.unwrap_or(false) {
+    start_idle_watcher(window);
+  }
 
   // If the subscription is dropped, Mundy's internal thread will exit and no events will ever be recieved
   Box::leak(Box::new(start_os_accent_subscriber(window)));

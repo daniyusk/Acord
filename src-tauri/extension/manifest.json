@@ -1,27 +1,13 @@
 {
-  "name": "Acord Header Destroyer",
-  "version": "1.1",
+  "name": "Acord WebRTC Privacy",
+  "version": "1.2",
   "homepage_url": "https://github.com/daniyusk/Acord",
-  "description": "Destroy CSP in Discord request headers and configure WebRTC IP handling",
+  "description": "Configure WebRTC IP handling without modifying Discord security headers",
   "manifest_version": 3,
   "permissions": [
-    "declarativeNetRequest",
     "privacy"
-  ],
-  "host_permissions": [
-    "*://*.discord.com/*",
-    "*://discord.com/*"
   ],
   "background": {
     "service_worker": "background.js"
-  },
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "csp_disabler",
-        "path": "dnr-rules.json",
-        "enabled": true
-      }
-    ]
   }
 }
