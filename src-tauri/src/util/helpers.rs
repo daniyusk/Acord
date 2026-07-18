@@ -9,7 +9,7 @@ pub async fn fetch_image(url: String) -> Option<String> {
   let client = reqwest::Client::new();
   let response = client
     .get(url)
-    .header("User-Agent", "Dorion")
+    .header("User-Agent", "Acord")
     .send()
     .await
     .unwrap();
@@ -86,7 +86,7 @@ pub fn restart_in_safemode(app: tauri::AppHandle) {
 
   match Command::new(current_exe).arg("--safemode").spawn() {
     Ok(_) => app.exit(0),
-    Err(e) => log!("Failed to restart Dorion in safemode: {e:?}"),
+    Err(e) => log!("Failed to restart Acord in safemode: {e:?}"),
   }
 }
 

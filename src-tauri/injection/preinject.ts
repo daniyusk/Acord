@@ -69,7 +69,7 @@ window.Dorion = {
   const INJECTED_PLUGIN_OPTIONS = {
     isVisible: true,
     allowedActions: { toggle: debug },
-    loaderName: 'Dorion'
+    loaderName: 'Acord'
   }
 
   window.SHELTER_INJECTOR_PLUGINS = {
@@ -133,7 +133,7 @@ async function init() {
   )
 
   updateOverlay({
-    subtitle: `Made with ❤️ by SpikeHD - v${version}`,
+    subtitle: `Acord - v${version}`,
     midtitle: 'Localizing JS imports...'
   })
 
@@ -245,10 +245,10 @@ async function handleThemeInjection() {
     const ts = document.querySelector('#dorion-theme')
     ts.textContent = \`
       ${cleanContents?.replace(/`/g, '\\`')
-      // To this day I do not know why I need to do this
-      .replace(/\\8/g, '')
-      .replace(/\\9/g, '')
-    }
+  // To this day I do not know why I need to do this
+    .replace(/\\8/g, '')
+    .replace(/\\9/g, '')
+}
     \`
 
     console.log('[Theme Loader] Appending Styles')
@@ -276,10 +276,10 @@ async function handleClientModThemeInjection() {
     const ts = document.querySelector('#dorion-client-mods-themes')
     ts.textContent = \`
       ${cleanContents?.replace(/`/g, '\\`')
-      // To this day I do not know why I need to do this
-      .replace(/\\8/g, '')
-      .replace(/\\9/g, '')
-    }
+  // To this day I do not know why I need to do this
+    .replace(/\\8/g, '')
+    .replace(/\\9/g, '')
+}
     \`
 
     console.log('[Theme Loader] Appending Client Mod Styles')

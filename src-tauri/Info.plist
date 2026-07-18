@@ -15,11 +15,11 @@
   <array>
     <dict>
       <key>CFBundleURLName</key>
-      <string>com.spikehd.dorion</string>
+      <string>io.github.daniyusk.acord</string>
       <key>CFBundleURLSchemes</key>
       <array>
-        <!-- register the dorion:// scheme -->
-        <string>dorion</string>
+        <!-- register the acord:// scheme -->
+        <string>acord</string>
         <!-- register the discord:// scheme -->
         <string>discord</string>
       </array>

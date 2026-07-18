@@ -44,9 +44,9 @@
       }
     }
   },
-  "productName": "Dorion",
+  "productName": "Acord",
   "version": "6.12.2",
-  "identifier": "com.spikehd.dorion",
+  "identifier": "io.github.daniyusk.acord",
   "plugins": {
     "deep-link": {
       "desktop": {

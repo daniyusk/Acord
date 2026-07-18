@@ -19,10 +19,10 @@ fn useragent(chrome_version: Option<String>) -> String {
 }
 
 pub fn clear_cache_check() {
-  let appdata = dirs::data_dir().unwrap_or_default().join("dorion");
+  let appdata = dirs::data_dir().unwrap_or_default().join("acord");
 
   if !appdata.exists() {
-    std::fs::create_dir_all(&appdata).expect("Failed to create dorion appdata dir!");
+    std::fs::create_dir_all(&appdata).expect("Failed to create acord appdata dir!");
   }
 
   let cache_file = appdata.join("clear_cache");
@@ -38,10 +38,10 @@ pub fn clear_cache_check() {
 pub fn set_clear_cache(win: tauri::WebviewWindow) {
   // Create a file called "clear_cache" in the appdata dir
   // This will be read by the window when it closes
-  let appdata = dirs::data_dir().unwrap_or_default().join("dorion");
+  let appdata = dirs::data_dir().unwrap_or_default().join("acord");
 
   if !appdata.exists() {
-    std::fs::create_dir_all(&appdata).expect("Failed to create dorion appdata dir!");
+    std::fs::create_dir_all(&appdata).expect("Failed to create acord appdata dir!");
   }
 
   let cache_file = appdata.join("clear_cache");
@@ -53,7 +53,7 @@ pub fn set_clear_cache(win: tauri::WebviewWindow) {
 
 #[tauri::command]
 pub fn clear_cache() {
-  // Remove %appdata%/dorion/webdata
+  // Remove %appdata%/acord/webdata
   let webdata_dir = get_webdata_dir();
 
   if webdata_dir.exists() {

@@ -44,7 +44,7 @@ pub fn send_notification(
 
   // Then write it to a temp file
   let mut tmp_file = std::env::temp_dir();
-  tmp_file.push("dorion_notif_icon.png");
+  tmp_file.push("acord_notif_icon.png");
 
   let file = match std::fs::File::create(&tmp_file) {
     Ok(file) => file,
@@ -113,7 +113,7 @@ fn send_notification_internal_other(
   match Notification::new()
     .summary(&title)
     .body(&body)
-    .icon("dorion")
+    .icon("acord")
     .timeout(Timeout::Milliseconds(5000))
     .action("default", "default")
     .show()

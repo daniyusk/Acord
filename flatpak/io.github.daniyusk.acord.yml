@@ -1,10 +1,10 @@
-id: io.github.spikehd.dorion
+id: io.github.daniyusk.acord
 
 runtime: org.gnome.Platform
 runtime-version: '46'
 sdk: org.gnome.Sdk
 
-command: dorion
+command: acord
 finish-args:
   - --share=network
   - --share=ipc
@@ -19,20 +19,20 @@ modules:
     buildsystem: simple
     sources:
       - type: file
-        url: https://github.com/SpikeHD/Dorion/releases/download/v6.12.2/dorion_6.12.2_amd64.deb
+        url: https://github.com/daniyusk/Acord/releases/download/v6.12.2/acord_6.12.2_amd64.deb
         sha256: 7934AE579EC041A46D5877531FFC6CF520FB5BD1A2F583A1EBA3D7B8B9F5FF41
         only-arches: [x86_64]
       - type: file
-        url: https://github.com/SpikeHD/Dorion/releases/download/v6.12.2/dorion_6.12.2_arm64.deb
+        url: https://github.com/daniyusk/Acord/releases/download/v6.12.2/acord_6.12.2_arm64.deb
         sha256: 173E922B06105F714DC7804A0F51C368CFF2904BF666D7BA8677DE3C5288DB63
         only-arches: [aarch64]
       - type: file
-        url: https://github.com/SpikeHD/Dorion/releases/download/v6.12.2/dorion_6.12.2_armhf.deb
+        url: https://github.com/daniyusk/Acord/releases/download/v6.12.2/acord_6.12.2_armhf.deb
         sha256: 9B6982DD2F256DAA0D69348A8F370331390D199F7BC9E610895F67D142A49B55
         only-arches: [arm]
     build-commands:
       - ar -x *.deb
       - tar -xf data.tar.gz
-      - 'install -Dm755 usr/bin/Dorion /app/bin/Dorion'
-      - install -Dm644 usr/share/applications/Dorion.desktop /app/share/applications/io.github.spikehd.dorion.desktop
-      - install -Dm644 usr/share/icons/hicolor/512x512/apps/Dorion.png /app/share/icons/hicolor/128x128/apps/io.github.spikehd.dorion.png
+      - 'install -Dm755 usr/bin/Acord /app/bin/Acord'
+      - install -Dm644 usr/share/applications/Acord.desktop /app/share/applications/io.github.daniyusk.acord.desktop
+      - install -Dm644 usr/share/icons/hicolor/512x512/apps/Acord.png /app/share/icons/hicolor/128x128/apps/io.github.daniyusk.acord.png
