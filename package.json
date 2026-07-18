@@ -7,6 +7,7 @@
     "dev": "pnpm build:js && tauri dev",
     "build:updater": "cd updater && cargo build --release && cd .. && cp updater/target/release/updater src-tauri/updater",
     "preview": "vite preview",
+    "typecheck:injection": "tsc --project src-tauri/injection/tsconfig.json",
     "tauri": "tauri",
     "check:tauri-cli": "node scripts/check-tauri-cli-version.mjs",
     "format": "cargo fmt --manifest-path ./src-tauri/Cargo.toml --all && prettier src -w",
@@ -22,7 +23,9 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
+    "@tauri-apps/api": "2.11.1",
     "@tauri-apps/cli": "2.11.4",
+    "@tauri-apps/plugin-shell": "2.3.5",
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
     "esbuild": "^0.28.0",
@@ -32,5 +35,8 @@
     "typescript": "^5.9.3",
     "vite": "^8.0.10"
   },
-  "packageManager": "pnpm@10.0.0"
+  "packageManager": "pnpm@10.0.0",
+  "dependencies": {
+    "@tauri-apps/plugin-http": "2.5.9"
+  }
 }

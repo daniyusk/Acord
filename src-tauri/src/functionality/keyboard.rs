@@ -13,6 +13,8 @@ const MAX_KEY_FIELD_BYTES: usize = 64;
 const MAX_ACTION_BYTES: usize = 128;
 
 #[derive(Serialize, Deserialize, Debug)]
+#[cfg(feature = "hotkeys")]
+#[cfg(not(target_os = "macos"))]
 pub struct KeybindChangedEvent {
   pub keys: Vec<KeyStruct>,
   pub key: String,

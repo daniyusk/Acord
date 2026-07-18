@@ -1,30 +1,14 @@
 export {}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+type TauriGlobal = typeof import('@tauri-apps/api')
+type TauriShell = typeof import('@tauri-apps/plugin-shell')
+
 declare global {
   interface Window {
     SHELTER_INJECTOR_PLUGINS: Record<string, [string, Record<string, unknown>]> 
-    __TAURI__: {
-      core: {
-        invoke: (cmd: string, args?: Record<string, any>) => Promise<any>
-      }
-      event: {
-        listen: (event: string, handler: (event: TauriEvent) => void) => () => void
-        emit: (event: string, payload: unknown) => void
-        TauriEvent: {
-          WINDOW_RESIZED: string
-          WINDOW_CLOSE_REQUESTED: string
-        }
-      }
-      shell: {
-        open: (path: string) => void
-      }
-      app: {
-        getVersion: () => Promise<string>,
-      }
-      http: any
-      webviewWindow: any
-      [key: string]: unknown
+    __TAURI__: TauriGlobal & {
+      shell: TauriShell
     }
 
     nativeFetch: typeof fetch

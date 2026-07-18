@@ -4,7 +4,7 @@ const currentlyPressed = new Set<string>()
 
 export async function initWindowsKeybinds() {
   try {
-    const platform = await invoke('get_platform')
+    const platform = await invoke<string>('get_platform')
     if (platform !== 'windows') return
   } catch {
     return
@@ -22,7 +22,7 @@ function handleKeyDown(event: KeyboardEvent) {
     code: code
   }))
 
-  invoke('trigger_keys_pressed', { keys, pressed: true }).catch(() => {})
+  invoke<void>('trigger_keys_pressed', { keys, pressed: true }).catch(() => {})
 }
 
 function handleKeyUp(event: KeyboardEvent) {
@@ -31,7 +31,7 @@ function handleKeyUp(event: KeyboardEvent) {
     code: code
   }))
 
-  invoke('trigger_keys_pressed', { keys, pressed: false }).catch(() => {})
+  invoke<void>('trigger_keys_pressed', { keys, pressed: false }).catch(() => {})
 
   currentlyPressed.delete(event.code)
 }
