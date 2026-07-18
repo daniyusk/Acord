@@ -1,10 +1,10 @@
-const { invoke } = window.__TAURI__.core
+import { invoke } from '@tauri-apps/api/core'
 
 const currentlyPressed = new Set<string>()
 
 export async function initWindowsKeybinds() {
   try {
-    const platform = await invoke('get_platform')
+    const platform = await invoke<string>('get_platform')
     if (platform !== 'windows') return
   } catch {
     return

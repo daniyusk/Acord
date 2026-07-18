@@ -1,7 +1,10 @@
 import { badPostMessagePatch, proxyFetch, proxyXHR, proxyAddEventListener, proxyOpen, proxyNotification } from './shared/recreate'
 import { extraCssChangeWatch, safemodeTimer, typingAnim } from './shared/ui'
-import { cssSanitize, fetchImage, isJson, waitForApp, waitForElm, saferEval, timeout } from './shared/util'
+import { cssSanitize, fetchImage, isJson, waitForApp, waitForElm, saferEval } from './shared/util'
 import { waitForElmEx } from './shared/wait_elm'
+import { getVersion } from '@tauri-apps/api/app'
+import { invoke } from '@tauri-apps/api/core'
+import { emit, listen, TauriEvent, type Event as TauriEventPayload } from '@tauri-apps/api/event'
 
 // Let's expose some stuff for use in plugins and such
 window.Dorion = {
@@ -31,31 +34,25 @@ window.Dorion = {
   proxyAddEventListener()
   proxyNotification()
 
-  while (!window.__TAURI__) {
-    console.log('Waiting for definition...')
-    await timeout(50)
-  }
-
-  window.__TAURI__.event.emit('js_context_loaded', null)
+  await emit('js_context_loaded')
 
   proxyFetch()
 
-  console.log('__TAURI__ defined!')
+  console.log('Tauri modules initialized!')
 
   extraCssChangeWatch()
   proxyOpen()
 
-  const platform = await window.__TAURI__.core.invoke('get_platform')
+  const platform = await invoke<string>('get_platform')
   document.documentElement.setAttribute('data-dorion-platform', platform)
 
-  const { invoke } = window.__TAURI__.core
-  const config = await invoke('read_config_file')
+  const config = await invoke<string>('read_config_file')
 
   window.__DORION_CONFIG__ = isJson(config) ? JSON.parse(config) : {}
 
   // Recreate config if there is an issue
   if (!Object.keys(config).length || !config) {
-    const defaultConf = await invoke('default_config')
+    const defaultConf = await invoke<string>('default_config')
     // Write
     await invoke('write_config_file', {
       config: defaultConf
@@ -102,15 +99,13 @@ window.Dorion = {
 })()
 
 async function init() {
-  const { event, app } = window.__TAURI__
-  const { invoke } = window.__TAURI__.core
-  const config = await invoke('read_config_file')
+  const config = await invoke<string>('read_config_file')
 
   window.__DORION_CONFIG__ = isJson(config) ? JSON.parse(config) : {}
 
   // Recreate config if there is an issue
   if (!Object.keys(config).length || !config) {
-    const defaultConf = await invoke('default_config')
+    const defaultConf = await invoke<string>('default_config')
     // Write
     await invoke('write_config_file', {
       config: defaultConf
@@ -123,7 +118,7 @@ async function init() {
 
   await invoke('load_plugins')
 
-  const version = await app.getVersion()
+  const version = await getVersion()
 
   await displayLoadingTop()
 
@@ -148,11 +143,11 @@ async function init() {
     window.dispatchEvent(event)
   }
 
-  event.listen('beforeunload', dispatchBeforeUnload)
-  event.listen(event.TauriEvent.WINDOW_CLOSE_REQUESTED, dispatchBeforeUnload)
+  listen('beforeunload', dispatchBeforeUnload)
+  listen(TauriEvent.WINDOW_CLOSE_REQUESTED, dispatchBeforeUnload)
 
   // Start the loading_log event listener
-  const logUnlisten = await event.listen('loading_log', (event: TauriEvent) => {
+  const logUnlisten = await listen<string>('loading_log', (event: TauriEventPayload<string>) => {
     const log = event.payload as string
 
     updateOverlay({
@@ -167,7 +162,7 @@ async function init() {
     midtitle: 'Getting injection JS...'
   })
 
-  const injectionJs = await invoke('get_injection_js', {
+  const injectionJs = await invoke<string>('get_injection_js', {
     themeJs,
   })
 
@@ -207,8 +202,6 @@ async function updateOverlay(toUpdate: Record<string, string>) {
 }
 
 async function handleThemeInjection() {
-  const { invoke } = window.__TAURI__.core
-
   // This needs to exist for hot-switching to work
   const ts = document.createElement('style')
   ts.id = 'dorion-theme'
@@ -221,19 +214,19 @@ async function handleThemeInjection() {
   })
 
   // Get the initial theme
-  const themeContents = await invoke('get_themes').catch(e => console.error(e)) || ''
+  const themeContents = await invoke<string>('get_themes').catch(e => console.error(e)) || ''
 
   updateOverlay({
     midtitle: 'Localizing CSS imports...'
   })
 
   // Create a "name" for the "theme" (or combo) based on the retrieved enabled theme list
-  const themeNames = await invoke('get_enabled_themes').catch(e => console.error(e)) || []
+  const themeNames = await invoke<string[]>('get_enabled_themes').catch(e => console.error(e)) || []
   // Gotta adhere to filename length restrictions
   const themeName = themeNames.join('').substring(0, 254)
 
   // Localize the imports. On windows this no longer does anything
-  const localized = await invoke('localize_imports', {
+  const localized = await invoke<string>('localize_imports', {
     css: themeContents,
     name: themeName
   })
@@ -256,8 +249,6 @@ async function handleThemeInjection() {
 }
 
 async function handleClientModThemeInjection() {
-  const { invoke } = window.__TAURI__.core
-
   const ts = document.createElement('style')
   ts.id = 'dorion-client-mods-themes'
   document.body.appendChild(ts)
@@ -267,7 +258,7 @@ async function handleClientModThemeInjection() {
   })
 
   // Get the initial theme
-  const themeContents = await invoke('load_mods_css')
+  const themeContents = await invoke<string>('load_mods_css')
 
   // This will use the DOM in a funky way to validate the css, then we make sure to fix up quotes
   const cleanContents = cssSanitize(themeContents)?.replaceAll('\\"', '\'')
@@ -290,8 +281,7 @@ async function handleClientModThemeInjection() {
  * Display the splashscreen
  */
 async function displayLoadingTop() {
-  const { invoke } = window.__TAURI__.core
-  const html = await invoke('get_index')
+  const html = await invoke<string>('get_index')
   const loadingContainer = document.createElement('div') satisfies HTMLDivElement
   loadingContainer.id = 'loadingContainer'
   loadingContainer.innerHTML = html

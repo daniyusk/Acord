@@ -5,25 +5,10 @@ declare global {
   interface Window {
     SHELTER_INJECTOR_PLUGINS: Record<string, [string, Record<string, unknown>]> 
     __TAURI__: {
-      core: {
-        invoke: (cmd: string, args?: Record<string, any>) => Promise<any>
-      }
-      event: {
-        listen: (event: string, handler: (event: TauriEvent) => void) => () => void
-        emit: (event: string, payload: unknown) => void
-        TauriEvent: {
-          WINDOW_RESIZED: string
-          WINDOW_CLOSE_REQUESTED: string
-        }
-      }
       shell: {
         open: (path: string) => void
       }
-      app: {
-        getVersion: () => Promise<string>,
-      }
       http: any
-      webviewWindow: any
       [key: string]: unknown
     }
 

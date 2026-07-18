@@ -31,5 +31,8 @@
     "typescript": "^5.9.3",
     "vite": "^8.0.10"
   },
-  "packageManager": "pnpm@10.0.0"
+  "packageManager": "pnpm@10.0.0",
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1"
+  }
 }

@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "lib": ["ESNext", "DOM"],
     "strict": true,
     "sourceMap": true,

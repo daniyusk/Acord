@@ -1,9 +1,10 @@
 import { isJson } from './util'
+import { invoke } from '@tauri-apps/api/core'
 
 export async function proxyFetch() {
   window.nativeFetch = window.fetch
 
-  const extensionInjected = await window.__TAURI__.core.invoke('extension_injected')
+  const extensionInjected = await invoke<boolean>('extension_injected')
 
   console.log('[Proxy Fetch] Extension injected: ', extensionInjected)
 

@@ -1,4 +1,5 @@
 import { waitForElmEx } from './wait_elm'
+import { invoke } from '@tauri-apps/api/core'
 
 export function cssSanitize(css: string) {
   const style = document.createElement('style')
@@ -49,8 +50,7 @@ export async function waitForElm(selector: string, max: number | undefined = und
 }
 
 export async function fetchImage(url: string) {
-  const { invoke } = window.__TAURI__.core
-  return await invoke('fetch_image', { url })
+  return await invoke<string | null>('fetch_image', { url })
 }
 
 export async function saferEval(code: string) {

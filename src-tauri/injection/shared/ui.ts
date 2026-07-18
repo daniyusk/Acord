@@ -1,4 +1,6 @@
 import { timeout, waitForDom } from './util'
+import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 
 export function safemodeTimer(elm: HTMLDivElement) {
   setTimeout(() => {
@@ -19,12 +21,12 @@ export function safemodeTimer(elm: HTMLDivElement) {
 
     // If F, open plugins folder
     if (evt.code === 'KeyF') {
-      window.__TAURI__.core.invoke('open_themes')
+      invoke('open_themes')
     }
 
     // If S, relaunch once in safe mode.
     if (evt.code === 'KeyS') {
-      window.__TAURI__.core.invoke('restart_in_safemode')
+      invoke('restart_in_safemode')
     }
   }
 
@@ -60,8 +62,7 @@ export async function typingAnim() {
 }
 
 export async function applyExtraCSS() {
-  const { invoke } = window.__TAURI__.core
-  const css = await invoke('get_extra_css')
+  const css = await invoke<string>('get_extra_css')
   const style = document.createElement('style')
 
   style.innerHTML = css
@@ -81,7 +82,6 @@ export async function applyExtraCSS() {
 
 export async function extraCssChangeWatch() {
   await waitForDom()
-  const { event, core } = window.__TAURI__  
 
   const style = document.createElement('style')
   style.id = 'dorion-os-accent'
@@ -89,14 +89,14 @@ export async function extraCssChangeWatch() {
   const elm = document.body.appendChild(style)
 
   // Get the initial color
-  const initial = await core.invoke('get_os_accent')
+  const initial = await invoke<string>('get_os_accent')
   const setAccentColor = (color: string) => {
     elm.innerText = `html { --os-accent-color: ${color} !important; }`
   }
 
   setAccentColor(initial)
 
-  event.listen('os_accent_update', (event) => {
-    setAccentColor(event.payload as string)
+  listen<string>('os_accent_update', (event) => {
+    setAccentColor(event.payload)
   })
 }
