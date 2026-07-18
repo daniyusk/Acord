@@ -6,9 +6,7 @@ use std::path::PathBuf;
 use reqwest::Url;
 
 use crate::{
-  functionality::{
-    keyboard::{validate_keybinds, KeyStruct},
-  },
+  functionality::keyboard::{validate_keybinds, KeyStruct, KeybindAction},
   log,
   util::paths::{get_config_file, validate_profile_name},
 };
@@ -50,7 +48,7 @@ pub struct Config {
   pub tray_icon_enabled: Option<bool>,
   pub proxy_uri: Option<String>,
 
-  pub keybinds: Option<HashMap<String, Vec<KeyStruct>>>,
+  pub keybinds: Option<HashMap<KeybindAction, Vec<KeyStruct>>>,
   pub keybinds_enabled: Option<bool>,
 
   pub win7_style_notifications: Option<bool>,
@@ -261,7 +259,9 @@ pub fn write_config_file(contents: String) -> Result<(), String> {
 
 fn validate_setting_list(name: &str, values: &[String], max_entries: usize) -> Result<(), String> {
   if values.len() > max_entries {
-    return Err(format!("{name} cannot contain more than {max_entries} entries"));
+    return Err(format!(
+      "{name} cannot contain more than {max_entries} entries"
+    ));
   }
 
   if values.iter().any(|value| {
@@ -301,7 +301,7 @@ pub fn set_config(config: Config) -> Result<(), String> {
 mod tests {
   use std::collections::HashMap;
 
-  use super::{Config, KeyStruct};
+  use super::{Config, KeyStruct, KeybindAction};
 
   #[test]
   fn accepts_the_default_configuration() {
@@ -343,7 +343,7 @@ mod tests {
     config = Config::default();
     let mut keybinds = HashMap::new();
     keybinds.insert(
-      "PUSH_TO_TALK".to_string(),
+      KeybindAction::PushToTalk,
       vec![KeyStruct {
         name: "Ctrl".to_string(),
         code: "Control\nLeft".to_string(),

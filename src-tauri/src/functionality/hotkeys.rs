@@ -18,20 +18,20 @@ use crate::{
 };
 
 use super::keyboard::{
-  validate_keybind_action, validate_keybinds, validate_key_list, KeyStruct, KeybindChangedEvent,
+  validate_key_list, validate_keybinds, KeyStruct, KeybindAction, KeybindChangedEvent,
 };
 
 pub static KEYBINDS_CHANGED: AtomicBool = AtomicBool::new(false);
 pub static PTT_ENABLED: AtomicBool = AtomicBool::new(false);
 
 #[tauri::command]
-pub fn get_keybinds() -> HashMap<String, Vec<KeyStruct>> {
+pub fn get_keybinds() -> HashMap<KeybindAction, Vec<KeyStruct>> {
   let config = get_config();
   config.keybinds.unwrap_or_default()
 }
 
 #[tauri::command]
-pub fn set_keybinds(keybinds: HashMap<String, Vec<KeyStruct>>) -> Result<(), String> {
+pub fn set_keybinds(keybinds: HashMap<KeybindAction, Vec<KeyStruct>>) -> Result<(), String> {
   validate_keybinds(&keybinds)?;
 
   let mut config = get_config();
@@ -47,8 +47,7 @@ pub fn set_keybinds(keybinds: HashMap<String, Vec<KeyStruct>>) -> Result<(), Str
 }
 
 #[tauri::command]
-pub fn set_keybind(action: String, keys: Vec<KeyStruct>) -> Result<(), String> {
-  validate_keybind_action(&action)?;
+pub fn set_keybind(action: KeybindAction, keys: Vec<KeyStruct>) -> Result<(), String> {
   validate_key_list(&keys)?;
 
   let mut keybinds = get_keybinds();
@@ -81,7 +80,7 @@ pub fn trigger_keys_pressed(win: tauri::WebviewWindow, keys: Vec<KeyStruct>, pre
       if hotkeys_match(&input_hotkey, &action_hotkey) {
         log!("Key combination matched action: {}", action);
 
-        if action.starts_with("PUSH") {
+        if action.is_push_action() {
           handle_push_action(&win, action, pressed);
         } else {
           // For regular actions, only trigger on key press
@@ -201,7 +200,7 @@ fn new_hook(win: tauri::WebviewWindow) -> Result<Arc<Hook>, Box<dyn std::error::
 fn register_all_keybinds(
   win: &tauri::WebviewWindow,
   hook: &Arc<Hook>,
-  keybinds: &HashMap<String, Vec<KeyStruct>>,
+  keybinds: &HashMap<KeybindAction, Vec<KeyStruct>>,
 ) {
   for (action, keys) in keybinds {
     let win = win.clone();
@@ -215,7 +214,7 @@ fn register_all_keybinds(
 
     let action_clone = action.clone();
 
-    if action.starts_with("PUSH") {
+    if action.is_push_action() {
       let callback = move |pressed| {
         handle_push_action(&win, &action_clone, pressed);
       };
@@ -245,27 +244,27 @@ fn register_all_keybinds(
   }
 }
 
-fn handle_push_action(win: &tauri::WebviewWindow, action: &str, pressed: bool) {
-  if !PTT_ENABLED.load(Ordering::Relaxed) && action == "PUSH_TO_TALK" {
+fn handle_push_action(win: &tauri::WebviewWindow, action: &KeybindAction, pressed: bool) {
+  if !PTT_ENABLED.load(Ordering::Relaxed) && action.is_push_to_talk() {
     return;
   }
 
   if pressed {
     win
-      .emit("keybind_pressed", action)
+      .emit("keybind_pressed", action.as_str())
       .expect("Failed to emit keybind_pressed event");
   } else {
     win
-      .emit("keybind_released", action)
+      .emit("keybind_released", action.as_str())
       .expect("Failed to emit keybind_released event");
   }
 }
 
-fn handle_regular_action(win: &tauri::WebviewWindow, action: &str) {
+fn handle_regular_action(win: &tauri::WebviewWindow, action: &KeybindAction) {
   log!("Regular action triggered: {}", action);
 
   win
-    .emit("keybind_pressed", action)
+    .emit("keybind_pressed", action.as_str())
     .expect("Failed to emit keybind_pressed event");
 }
 
