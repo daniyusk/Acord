@@ -8,6 +8,7 @@ fn main() {
         "git_hash",
         "app_version",
         "frontend_ready",
+        "record_rtc_diagnostics",
         "minimize",
         "toggle_maximize",
         "set_decorations",

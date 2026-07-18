@@ -38,6 +38,7 @@
     "allow-localize-imports",
     "allow-open-themes",
     "allow-read-config-file",
+    "allow-record-rtc-diagnostics",
     "allow-restart-in-safemode",
     "allow-set-decorations",
     "allow-trigger-keys-pressed",

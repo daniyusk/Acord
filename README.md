@@ -24,6 +24,10 @@ Acord is in early development. Builds and releases are not available yet.
 
 Client mods, plugins, and themes are disabled by default. See the [security model](docs/security.md) before enabling them.
 
+## Diagnostics
+
+Optional [RTC diagnostics](docs/rtc-diagnostics.md) can help investigate call and stream quality without sending telemetry to a remote service.
+
 ## Credits
 
 - [Dorion](https://github.com/SpikeHD/Dorion), the project this fork originated from.

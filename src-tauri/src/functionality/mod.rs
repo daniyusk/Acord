@@ -1,5 +1,6 @@
 pub mod cache;
 pub mod configure;
+pub mod diagnostics;
 pub mod extension;
 pub mod idle;
 

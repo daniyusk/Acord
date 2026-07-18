@@ -195,6 +195,7 @@ fn main() {
       git_hash,
       app_version,
       functionality::configure::frontend_ready,
+      functionality::diagnostics::record_rtc_diagnostics,
       functionality::window::minimize,
       functionality::window::toggle_maximize,
       #[cfg(not(target_os = "macos"))]

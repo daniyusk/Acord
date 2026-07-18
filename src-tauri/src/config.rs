@@ -47,6 +47,7 @@ pub struct Config {
   pub client_plugins: Option<bool>,
   pub tray_icon_enabled: Option<bool>,
   pub proxy_uri: Option<String>,
+  pub rtc_diagnostics: Option<bool>,
 
   pub keybinds: Option<HashMap<KeybindAction, Vec<KeyStruct>>>,
   pub keybinds_enabled: Option<bool>,
@@ -93,6 +94,7 @@ impl Config {
       client_plugins: Option::from(false),
       tray_icon_enabled: Option::from(true),
       proxy_uri: Option::from("".to_string()),
+      rtc_diagnostics: Option::from(false),
 
       keybinds: Option::from(HashMap::new()),
       keybinds_enabled: Option::from(true),
@@ -139,6 +141,7 @@ impl Config {
       client_plugins: other.client_plugins.or(self.client_plugins),
       tray_icon_enabled: other.tray_icon_enabled.or(self.tray_icon_enabled),
       proxy_uri: other.proxy_uri.or(self.proxy_uri.clone()),
+      rtc_diagnostics: other.rtc_diagnostics.or(self.rtc_diagnostics),
 
       keybinds: other.keybinds.or(self.keybinds.clone()),
       keybinds_enabled: other.keybinds_enabled.or(self.keybinds_enabled),
@@ -305,7 +308,10 @@ mod tests {
 
   #[test]
   fn accepts_the_default_configuration() {
-    assert!(Config::default().validate().is_ok());
+    let config = Config::default();
+
+    assert_eq!(config.rtc_diagnostics, Some(false));
+    assert!(config.validate().is_ok());
   }
 
   #[test]

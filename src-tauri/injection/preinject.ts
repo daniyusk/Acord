@@ -2,6 +2,7 @@ import { proxyXHR, proxyAddEventListener, proxyOpen, proxyNotification } from '.
 import { extraCssChangeWatch, safemodeTimer, typingAnim } from './shared/ui'
 import { cssSanitize, fetchImage, isJson, waitForApp, waitForElm, saferEval } from './shared/util'
 import { waitForElmEx } from './shared/wait_elm'
+import { startRtcDiagnostics } from './shared/rtc_diagnostics'
 import { invoke } from '@tauri-apps/api/core'
 import { listen, TauriEvent } from '@tauri-apps/api/event'
 
@@ -55,6 +56,10 @@ async function readConfig(): Promise<AppConfig> {
   document.documentElement.setAttribute('data-dorion-platform', platform)
 
   window.__DORION_CONFIG__ = await readConfig()
+
+  if (window.__DORION_CONFIG__.rtc_diagnostics === true) {
+    startRtcDiagnostics()
+  }
 
   const clientPluginsEnabled = window.__DORION_CONFIG__.client_plugins === true
   console.log(window.__DORION_CONFIG__)
