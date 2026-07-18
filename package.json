@@ -21,7 +21,9 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
+    "@tauri-apps/api": "2.11.1",
     "@tauri-apps/cli": "^2.11.0",
+    "@tauri-apps/plugin-shell": "2.3.5",
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
     "esbuild": "^0.28.0",
