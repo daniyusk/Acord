@@ -21,6 +21,19 @@ fn sanitize_zoom_level(value: f64) -> f64 {
   }
 }
 
+#[cfg(test)]
+mod tests {
+  use super::sanitize_zoom_level;
+
+  #[test]
+  fn clamps_invalid_zoom_values() {
+    assert_eq!(sanitize_zoom_level(1.25), 1.25);
+    assert_eq!(sanitize_zoom_level(0.1), 0.25);
+    assert_eq!(sanitize_zoom_level(6.0), 5.0);
+    assert_eq!(sanitize_zoom_level(f64::NAN), 1.0);
+  }
+}
+
 fn useragent(chrome_version: Option<String>) -> String {
   let chrome_version = chrome_version.unwrap_or("131.0.0.0".to_string());
 

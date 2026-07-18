@@ -334,6 +334,7 @@ mod tests {
 
   #[test]
   fn rejects_path_traversal_and_platform_separators() {
+    let oversized = "a".repeat(256);
     for name in [
       "",
       ".",
@@ -345,6 +346,7 @@ mod tests {
       "C:\\profiles",
       "/tmp/profile",
       "profile\0name",
+      oversized.as_str(),
     ] {
       assert!(validate_profile_name(name).is_err(), "{name:?} should be rejected");
     }
@@ -356,5 +358,10 @@ mod tests {
 
     assert_eq!(profile_path(root, "work").unwrap(), root.join("work"));
     assert!(profile_path(root, "../outside").is_err());
+  }
+
+  #[test]
+  fn accepts_profile_name_at_the_length_limit() {
+    assert!(validate_profile_name(&"a".repeat(255)).is_ok());
   }
 }

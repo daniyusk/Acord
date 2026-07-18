@@ -299,7 +299,14 @@ pub fn set_config(config: Config) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-  use super::Config;
+  use std::collections::HashMap;
+
+  use super::{Config, KeyStruct};
+
+  #[test]
+  fn accepts_the_default_configuration() {
+    assert!(Config::default().validate().is_ok());
+  }
 
   #[test]
   fn rejects_configurations_with_unsafe_profile_names() {
@@ -317,6 +324,32 @@ mod tests {
 
     config.proxy_uri = None;
     config.client_mods = Some(vec!["Shelter".to_string(); 4]);
+    assert!(config.validate().is_err());
+  }
+
+  #[test]
+  fn rejects_invalid_zoom_theme_and_keybind_values() {
+    let mut config = Config::default();
+    config.zoom = Some("not-a-number".to_string());
+    assert!(config.validate().is_err());
+
+    config.zoom = Some("6.0".to_string());
+    assert!(config.validate().is_err());
+
+    config = Config::default();
+    config.themes = Some(vec!["bad\ntheme".to_string()]);
+    assert!(config.validate().is_err());
+
+    config = Config::default();
+    let mut keybinds = HashMap::new();
+    keybinds.insert(
+      "PUSH_TO_TALK".to_string(),
+      vec![KeyStruct {
+        name: "Ctrl".to_string(),
+        code: "Control\nLeft".to_string(),
+      }],
+    );
+    config.keybinds = Some(keybinds);
     assert!(config.validate().is_err());
   }
 }

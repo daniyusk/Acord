@@ -85,6 +85,26 @@ mod tests {
     keybinds.insert("bad\nkey".to_string(), Vec::new());
     assert!(validate_keybinds(&keybinds).is_err());
   }
+
+  #[test]
+  fn rejects_keybinds_with_too_many_or_oversized_keys() {
+    let key = KeyStruct {
+      name: "Ctrl".to_string(),
+      code: "ControlLeft".to_string(),
+    };
+    let mut keybinds = HashMap::new();
+    keybinds.insert("PUSH_TO_TALK".to_string(), vec![key.clone(); 9]);
+    assert!(validate_keybinds(&keybinds).is_err());
+
+    keybinds.insert(
+      "PUSH_TO_TALK".to_string(),
+      vec![KeyStruct {
+        name: "Ctrl".to_string(),
+        code: "a".repeat(65),
+      }],
+    );
+    assert!(validate_keybinds(&keybinds).is_err());
+  }
 }
 
 #[cfg(feature = "hotkeys")]

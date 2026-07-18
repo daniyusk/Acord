@@ -29,9 +29,13 @@ pub static CLIENT_MODS: phf::Map<&'static str, ClientMod> = phf_map! {
 };
 
 fn enabled_client_mods() -> Vec<String> {
+  filter_enabled_client_mods(get_config().client_mods.unwrap_or_default())
+}
+
+fn filter_enabled_client_mods(configured_mods: Vec<String>) -> Vec<String> {
   let mut enabled_mods = Vec::new();
 
-  for mod_name in get_config().client_mods.unwrap_or_default() {
+  for mod_name in configured_mods {
     if CLIENT_MODS.contains_key(mod_name.as_str()) && !enabled_mods.contains(&mod_name) {
       enabled_mods.push(mod_name);
     }
@@ -136,6 +140,23 @@ pub fn load_mods_js() -> String {
   }
 
   exec
+}
+
+#[cfg(test)]
+mod tests {
+  use super::filter_enabled_client_mods;
+
+  #[test]
+  fn ignores_unknown_and_duplicate_client_mods() {
+    let enabled = filter_enabled_client_mods(vec![
+      "Unknown".to_string(),
+      "Shelter".to_string(),
+      "Shelter".to_string(),
+      "Vencord".to_string(),
+    ]);
+
+    assert_eq!(enabled, vec!["Shelter".to_string(), "Vencord".to_string()]);
+  }
 }
 
 #[tauri::command]

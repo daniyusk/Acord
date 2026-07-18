@@ -126,7 +126,10 @@ fn validate_public_ip(ip: IpAddr) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-  use super::{normalize_css_file_name, validate_file_name, validate_http_url};
+  use super::{
+    is_discord_snowflake, normalize_css_file_name, validate_file_name, validate_http_url,
+    validate_payload_size,
+  };
 
   #[test]
   fn accepts_public_http_urls() {
@@ -136,14 +139,17 @@ mod tests {
 
   #[test]
   fn rejects_unsafe_urls() {
+    let oversized_url = format!("https://example.com/{}", "a".repeat(2048));
     for url in [
       "file:///etc/passwd",
       "https://localhost/icon.png",
+      "https://LOCALHOST/icon.png",
       "http://127.0.0.1:8080/",
       "http://192.168.1.1/",
       "http://[::1]/",
       "http://[::ffff:127.0.0.1]/",
       "https://user:password@example.com/",
+      oversized_url.as_str(),
     ] {
       assert!(validate_http_url(url).is_err(), "{url} should be rejected");
     }
@@ -152,10 +158,30 @@ mod tests {
   #[test]
   fn normalizes_and_validates_css_file_names() {
     assert_eq!(normalize_css_file_name("Midnight.CSS").unwrap(), "Midnight.css");
+    assert_eq!(normalize_css_file_name("midnight").unwrap(), "midnight.css");
+    assert!(normalize_css_file_name("").is_err());
     assert!(validate_file_name("theme.css").is_ok());
 
-    for name in ["../theme.css", "nested/theme.css", "C:\\theme.css", "theme\0.css"] {
+    let oversized = "a".repeat(201);
+    for name in [
+      "../theme.css",
+      "nested/theme.css",
+      "C:\\theme.css",
+      "theme\0.css",
+      oversized.as_str(),
+    ] {
       assert!(validate_file_name(name).is_err(), "{name:?} should be rejected");
+    }
+  }
+
+  #[test]
+  fn rejects_oversized_payloads_and_invalid_snowflakes() {
+    assert!(validate_payload_size("safe", 4, "Payload").is_ok());
+    assert!(validate_payload_size("oversized", 4, "Payload").is_err());
+
+    assert!(is_discord_snowflake("12345678901234567890"));
+    for value in ["", "123abc", "123\n456", "123456789012345678901"] {
+      assert!(!is_discord_snowflake(value), "{value:?} should be rejected");
     }
   }
 }
