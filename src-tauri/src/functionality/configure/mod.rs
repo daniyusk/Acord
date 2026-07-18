@@ -31,7 +31,6 @@ use super::rpc::start_rpc_server;
 use super::tray::create_tray;
 
 pub fn configure(window: &tauri::WebviewWindow) {
-  #[cfg(any(feature = "rpc", feature = "hotkeys", feature = "blur"))]
   let config = get_config();
   let handle = window.app_handle();
 

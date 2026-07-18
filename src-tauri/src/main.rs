@@ -179,11 +179,12 @@ fn main() {
 
   builder
     .plugin(tauri_plugin_deep_link::init())
+    .plugin(tauri_plugin_http::init())
+    .plugin(tauri_plugin_shell::init())
     .plugin(tauri_plugin_autostart::init(
       tauri_plugin_autostart::MacosLauncher::LaunchAgent,
       Some(vec!["--startup"]),
     ))
-    .plugin(tauri_plugin_process::init())
     .plugin(
       tauri_plugin_prevent_default::Builder::new()
         .with_flags(tauri_plugin_prevent_default::Flags::FIND)
