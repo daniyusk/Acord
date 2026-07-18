@@ -28,14 +28,25 @@ pub static CLIENT_MODS: phf::Map<&'static str, ClientMod> = phf_map! {
   },
 };
 
+fn enabled_client_mods() -> Vec<String> {
+  let mut enabled_mods = Vec::new();
+
+  for mod_name in get_config().client_mods.unwrap_or_default() {
+    if CLIENT_MODS.contains_key(mod_name.as_str()) && !enabled_mods.contains(&mod_name) {
+      enabled_mods.push(mod_name);
+    }
+  }
+
+  enabled_mods
+}
+
 #[tauri::command]
 pub fn available_mods() -> Vec<String> {
   CLIENT_MODS.keys().map(|s| s.to_string()).collect()
 }
 
 pub fn load_mods_js() -> String {
-  let config = get_config();
-  let mut enabled_mods = config.client_mods.unwrap_or_default();
+  let mut enabled_mods = enabled_client_mods();
 
   // if enabled_mods does not include shelter, add it and save the config
   if !enabled_mods.contains(&"Shelter".to_string()) {
@@ -129,8 +140,7 @@ pub fn load_mods_js() -> String {
 
 #[tauri::command]
 pub fn load_mods_css() -> String {
-  let config = get_config();
-  let enabled_mods = config.client_mods.unwrap_or_default();
+  let enabled_mods = enabled_client_mods();
   let mut exec = String::new();
 
   let mut tasks = Vec::new();

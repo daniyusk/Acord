@@ -1,8 +1,16 @@
 use regex::Regex;
-use std::fs;
+use std::{fs, io::Read};
 
 use crate::log;
-use crate::util::paths::get_theme_dir;
+use crate::util::{
+  input_validation::{
+    validate_file_name, validate_http_url, validate_payload_size, MAX_CSS_BYTES,
+    MAX_REMOTE_RESPONSE_BYTES,
+  },
+  paths::get_theme_dir,
+};
+
+const MAX_CSS_IMPORTS: usize = 32;
 
 #[tauri::command]
 pub async fn clear_css_cache() {
@@ -25,26 +33,50 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
 
   use crate::config::get_config;
 
+  if let Err(error) = validate_payload_size(&css, MAX_CSS_BYTES, "CSS") {
+    log!("Skipping oversized CSS payload: {error}");
+    return String::new();
+  }
+
   let reg = Regex::new(r#"(?m)^@import url\((?:"|'|)(?:|.+?)\/\/(.+?)(?:"|'|)\);"#).unwrap();
   let mut seen_urls: Vec<String> = vec![];
   let mut new_css = css.clone();
+  let cache_file_name = match validate_file_name(&name) {
+    Ok(()) => Some(format!("{name}_cache.css")),
+    Err(error) => {
+      log!("Skipping CSS cache for invalid theme name: {error}");
+      None
+    }
+  };
 
   let matches = reg.captures_iter(Box::leak(css.into_boxed_str()));
 
   let mut tasks = Vec::new();
+  let client = match reqwest::blocking::Client::builder()
+    .redirect(reqwest::redirect::Policy::none())
+    .build()
+  {
+    Ok(client) => client,
+    Err(error) => {
+      log!("Failed to create HTTP client: {error}");
+      return String::new();
+    }
+  };
 
   // If we need to cache CSS, first check and use cache if it exists
   if get_config().cache_css.unwrap_or(true) {
-    let cache_path = get_theme_dir().join("cache");
+    if let Some(cache_file_name) = &cache_file_name {
+      let cache_path = get_theme_dir().join("cache");
 
-    let cache_file = cache_path.join(format!("{name}_cache.css"));
+      let cache_file = cache_path.join(cache_file_name);
 
-    if fs::metadata(&cache_file).is_ok() {
-      log!("Using cached CSS for {}", name);
+      if fs::metadata(&cache_file).is_ok() {
+        log!("Using cached CSS for {}", name);
 
-      // if reading to string succeeds, return that
-      if let Ok(cached) = fs::read_to_string(cache_file) {
-        return cached;
+        // if reading to string succeeds, return that
+        if let Ok(cached) = fs::read_to_string(cache_file) {
+          return cached;
+        }
       }
     }
   }
@@ -63,14 +95,30 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
       continue;
     }
 
+    if seen_urls.len() >= MAX_CSS_IMPORTS {
+      log!("Skipping CSS imports beyond the {MAX_CSS_IMPORTS} URL limit");
+      new_css = new_css.replace(full_import, "");
+      continue;
+    }
+
+    let request_url = match validate_http_url(&format!("https://{url}")) {
+      Ok(url) => url,
+      Err(error) => {
+        log!("Skipping invalid CSS import URL: {error}");
+        new_css = new_css.replace(full_import, "");
+        continue;
+      }
+    };
+
     let win_clone = win.clone(); // For use within the thread
+    let client = client.clone();
 
     seen_urls.push(url.clone());
 
     tasks.push(std::thread::spawn(move || {
       log!("Getting: {}", &url);
 
-      let response = match reqwest::blocking::get(format!("https://{}", &url)) {
+      let mut response = match client.get(request_url).send() {
         Ok(r) => r,
         Err(e) => {
           log!("Request failed: {}", e);
@@ -80,16 +128,26 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
         }
       };
 
-      let status = response.status();
-
-      if status != 200 {
-        log!("Request failed: {}", status);
+      if !response.status().is_success()
+        || response
+          .content_length()
+          .is_some_and(|length| length > MAX_CSS_BYTES as u64)
+      {
+        log!("Request failed: {}", response.status());
         log!("URL: {}", &url);
 
         return Some((full_import.to_owned(), String::new()));
       }
 
-      let text = response.text().expect("CSS import text failed to parse!");
+      let mut text = String::new();
+      if response
+        .take(MAX_CSS_BYTES as u64 + 1)
+        .read_to_string(&mut text)
+        .is_err()
+        || validate_payload_size(&text, MAX_CSS_BYTES, "CSS import").is_err()
+      {
+        return Some((full_import.to_owned(), String::new()));
+      }
 
       // Emit a loading log
       win_clone
@@ -120,6 +178,12 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
 
     let (url, processed) = result.unwrap();
 
+    if new_css.len().saturating_add(processed.len()) > MAX_CSS_BYTES {
+      log!("Skipping CSS import because the combined stylesheet would be too large");
+      new_css = new_css.replace(url.as_str(), "");
+      continue;
+    }
+
     log!(
       "Replacing URL: {} with CSS that is {} characters long",
       url,
@@ -147,16 +211,18 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
 
   // If we need to cache css, do that
   if get_config().cache_css.unwrap_or(true) {
-    let cache_path = get_theme_dir().join("cache");
+    if let Some(cache_file_name) = cache_file_name {
+      let cache_path = get_theme_dir().join("cache");
 
-    // Ensure cache path exists
-    if fs::metadata(&cache_path).is_err() {
-      fs::create_dir(&cache_path).expect("Failed to create cache directory!");
+      // Ensure cache path exists
+      if fs::metadata(&cache_path).is_err() {
+        fs::create_dir(&cache_path).expect("Failed to create cache directory!");
+      }
+
+      let cache_file = cache_path.join(cache_file_name);
+
+      fs::write(cache_file, new_css.clone()).expect("Failed to write cache file!");
     }
-
-    let cache_file = cache_path.join(format!("{name}_cache.css"));
-
-    fs::write(cache_file, new_css.clone()).expect("Failed to write cache file!");
   }
 
   new_css
@@ -165,6 +231,11 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
 #[cfg(target_os = "windows")]
 #[tauri::command]
 pub fn localize_imports(_win: tauri::WebviewWindow, css: String, _name: String) -> String {
+  if let Err(error) = validate_payload_size(&css, MAX_CSS_BYTES, "CSS") {
+    log!("Skipping oversized CSS payload: {error}");
+    return String::new();
+  }
+
   log!(
     "Windows no longer requires CSS imports to be localized, but it does require import shuffling!"
   );
@@ -226,15 +297,33 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
     return new_css;
   }
 
+  let client = match reqwest::blocking::Client::builder()
+    .redirect(reqwest::redirect::Policy::none())
+    .build()
+  {
+    Ok(client) => client,
+    Err(error) => {
+      log!("Failed to create HTTP client: {error}");
+      return new_css;
+    }
+  };
+
   for groups in matches {
     let url = groups.get(1).unwrap().as_str();
-    let filetype = url.split('.').next_back().unwrap();
+    let request_url = match validate_http_url(url) {
+      Ok(url) => url,
+      Err(error) => {
+        log!("Skipping invalid image import URL: {error}");
+        continue;
+      }
+    };
+    let filetype = url.split('?').next().unwrap_or(url).split('.').next_back().unwrap_or("png");
 
     // SVGs require the filetype to be svg+xml because they're special I guess
     let filetype = if filetype == "svg" {
-      "svg+xml"
+      "svg+xml".to_string()
     } else {
-      filetype
+      filetype.to_string()
     };
 
     // CORS allows discord media
@@ -258,7 +347,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
 
     // If there are more than 50 tasks, it's safe to say that there are probably too many images
     // to process, so we should just skip it
-    if groups.len() > 50 {
+    if tasks.len() >= 50 {
       win
         .emit(
           "loading_log",
@@ -269,11 +358,12 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
     }
 
     let win_clone = win.clone(); // Clone the Window handle for use in the async block
+    let client = client.clone();
 
     tasks.push(std::thread::spawn(move || {
       log!("Getting: {}", &url);
 
-      let response = match reqwest::blocking::get(url) {
+      let response = match client.get(request_url).send() {
         Ok(r) => r,
         Err(e) => {
           log!("Request failed: {}", e);
@@ -286,7 +376,19 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
           return None;
         }
       };
-      let bytes = response.bytes().unwrap();
+
+      if !response.status().is_success()
+        || response
+          .content_length()
+          .is_some_and(|length| length > MAX_REMOTE_RESPONSE_BYTES)
+      {
+        return None;
+      }
+
+      let bytes = match response.bytes() {
+        Ok(bytes) if bytes.len() <= MAX_REMOTE_RESPONSE_BYTES as usize => bytes,
+        _ => return None,
+      };
       let b64 = general_purpose::STANDARD.encode(&bytes);
 
       win_clone

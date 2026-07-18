@@ -3,9 +3,19 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::functionality::keyboard::KeyStruct;
-use crate::log;
-use crate::util::paths::{get_config_file, validate_profile_name};
+use reqwest::Url;
+
+use crate::{
+  functionality::{
+    keyboard::{validate_keybinds, KeyStruct},
+  },
+  log,
+  util::paths::{get_config_file, validate_profile_name},
+};
+
+const MAX_THEMES: usize = 64;
+const MAX_CLIENT_MODS: usize = 3;
+const MAX_SETTING_STRING_BYTES: usize = 2048;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -157,6 +167,34 @@ impl Config {
       validate_profile_name(profile)?;
     }
 
+    if let Some(themes) = &self.themes {
+      validate_setting_list("Theme list", themes, MAX_THEMES)?;
+    }
+
+    if let Some(client_mods) = &self.client_mods {
+      validate_setting_list("Client mod list", client_mods, MAX_CLIENT_MODS)?;
+    }
+
+    if let Some(zoom) = self.zoom.as_deref() {
+      let zoom = zoom
+        .parse::<f64>()
+        .map_err(|_| "Zoom must be a number".to_string())?;
+      if !zoom.is_finite() || !(0.25..=5.0).contains(&zoom) {
+        return Err("Zoom must be between 0.25 and 5.0".to_string());
+      }
+    }
+
+    if let Some(proxy_uri) = self.proxy_uri.as_deref().filter(|uri| !uri.is_empty()) {
+      let proxy = Url::parse(proxy_uri).map_err(|error| format!("Invalid proxy URL: {error}"))?;
+      if !matches!(proxy.scheme(), "http" | "https") || proxy.host_str().is_none() {
+        return Err("Proxy URL must use HTTP(S) and include a host".to_string());
+      }
+    }
+
+    if let Some(keybinds) = &self.keybinds {
+      validate_keybinds(keybinds)?;
+    }
+
     Ok(())
   }
 
@@ -221,6 +259,22 @@ pub fn write_config_file(contents: String) -> Result<(), String> {
     .map_err(|error| format!("Error writing config: {error}"))
 }
 
+fn validate_setting_list(name: &str, values: &[String], max_entries: usize) -> Result<(), String> {
+  if values.len() > max_entries {
+    return Err(format!("{name} cannot contain more than {max_entries} entries"));
+  }
+
+  if values.iter().any(|value| {
+    value.is_empty()
+      || value.len() > MAX_SETTING_STRING_BYTES
+      || value.chars().any(char::is_control)
+  }) {
+    return Err(format!("{name} contains an invalid value"));
+  }
+
+  Ok(())
+}
+
 #[tauri::command]
 pub fn default_config() -> Config {
   Config::default()
@@ -252,6 +306,17 @@ mod tests {
     let mut config = Config::default();
     config.profile = Some("../outside".to_string());
 
+    assert!(config.validate().is_err());
+  }
+
+  #[test]
+  fn rejects_unsafe_proxy_and_oversized_client_mod_lists() {
+    let mut config = Config::default();
+    config.proxy_uri = Some("file:///tmp/proxy".to_string());
+    assert!(config.validate().is_err());
+
+    config.proxy_uri = None;
+    config.client_mods = Some(vec!["Shelter".to_string(); 4]);
     assert!(config.validate().is_err());
   }
 }

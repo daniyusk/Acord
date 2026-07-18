@@ -17,7 +17,9 @@ use crate::{
   log,
 };
 
-use super::keyboard::{KeyStruct, KeybindChangedEvent};
+use super::keyboard::{
+  validate_keybind_action, validate_keybinds, validate_key_list, KeyStruct, KeybindChangedEvent,
+};
 
 pub static KEYBINDS_CHANGED: AtomicBool = AtomicBool::new(false);
 pub static PTT_ENABLED: AtomicBool = AtomicBool::new(false);
@@ -29,7 +31,9 @@ pub fn get_keybinds() -> HashMap<String, Vec<KeyStruct>> {
 }
 
 #[tauri::command]
-pub fn set_keybinds(keybinds: HashMap<String, Vec<KeyStruct>>) {
+pub fn set_keybinds(keybinds: HashMap<String, Vec<KeyStruct>>) -> Result<(), String> {
+  validate_keybinds(&keybinds)?;
+
   let mut config = get_config();
   config.keybinds = Some(keybinds);
 
@@ -38,19 +42,29 @@ pub fn set_keybinds(keybinds: HashMap<String, Vec<KeyStruct>>) {
   }
 
   KEYBINDS_CHANGED.store(true, std::sync::atomic::Ordering::Relaxed);
+
+  Ok(())
 }
 
 #[tauri::command]
-pub fn set_keybind(action: String, keys: Vec<KeyStruct>) {
+pub fn set_keybind(action: String, keys: Vec<KeyStruct>) -> Result<(), String> {
+  validate_action(&action)?;
+  validate_key_list(&keys)?;
+
   let mut keybinds = get_keybinds();
   keybinds.insert(action, keys);
 
-  set_keybinds(keybinds);
+  set_keybinds(keybinds)
 }
 
 #[tauri::command]
 #[cfg(target_os = "windows")]
 pub fn trigger_keys_pressed(win: tauri::WebviewWindow, keys: Vec<KeyStruct>, pressed: bool) {
+  if let Err(error) = validate_key_list(&keys) {
+    log!("Ignoring invalid key press payload: {error}");
+    return;
+  }
+
   let keybinds = get_keybinds();
 
   // Convert the input keys to a hotkey for comparison
@@ -104,14 +118,23 @@ pub fn start_keybind_watcher(win: &tauri::WebviewWindow) {
       return;
     }
 
-    let keybinds: Vec<KeybindChangedEvent> = serde_json::from_str(payload).unwrap();
+    let keybinds: Vec<KeybindChangedEvent> = match serde_json::from_str(payload) {
+      Ok(keybinds) => keybinds,
+      Err(error) => {
+        log!("Ignoring malformed keybind change event: {error}");
+        return;
+      }
+    };
     let mut keybinds_map = HashMap::new();
 
     for keybind in keybinds {
       keybinds_map.insert(keybind.key, keybind.keys);
     }
 
-    set_keybinds(keybinds_map);
+    if let Err(error) = set_keybinds(keybinds_map) {
+      log!("Ignoring invalid keybind change event: {error}");
+      return;
+    }
 
     // Drop and recreate the hook to apply new keybinds
     *hook.lock().unwrap() = match new_hook(win_hook.clone()) {
@@ -139,7 +162,13 @@ pub fn start_keybind_watcher(win: &tauri::WebviewWindow) {
       return;
     }
 
-    let state = serde_json::from_str::<PTTPayload>(payload).unwrap();
+    let state = match serde_json::from_str::<PTTPayload>(payload) {
+      Ok(state) => state,
+      Err(error) => {
+        log!("Ignoring malformed push-to-talk event: {error}");
+        return;
+      }
+    };
     PTT_ENABLED.store(state.state, std::sync::atomic::Ordering::Relaxed);
 
     let mut config = get_config();

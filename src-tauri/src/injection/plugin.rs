@@ -2,7 +2,13 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs};
 
-use crate::{log, util::paths::get_plugin_dir};
+use crate::{
+  log,
+  util::{
+    input_validation::{validate_payload_size, MAX_JAVASCRIPT_BYTES},
+    paths::get_plugin_dir,
+  },
+};
 
 use super::injection_runner;
 
@@ -78,6 +84,11 @@ pub fn load_plugins(win: tauri::WebviewWindow, preload_only: Option<bool>) {
 
 #[tauri::command]
 pub fn get_plugin_import_urls(plugin_js: String) -> Vec<String> {
+  if let Err(error) = validate_payload_size(&plugin_js, MAX_JAVASCRIPT_BYTES, "Plugin JavaScript") {
+    log!("Skipping oversized plugin import payload: {error}");
+    return Vec::new();
+  }
+
   let mut script_imports: Vec<String> = vec![];
   let url_imports = get_js_imports(&plugin_js);
 

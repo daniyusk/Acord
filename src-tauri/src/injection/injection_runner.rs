@@ -2,7 +2,11 @@ use include_flate::flate;
 use regex::Regex;
 use std::collections::HashMap;
 
-use crate::{log, processors::js_preprocess::eval_js_imports};
+use crate::{
+  log,
+  processors::js_preprocess::eval_js_imports,
+  util::input_validation::{validate_payload_size, MAX_JAVASCRIPT_BYTES},
+};
 
 use super::plugin::get_plugin_list;
 
@@ -10,7 +14,9 @@ flate!(pub static INJECTION: str from "./injection/postinject_min.js");
 flate!(pub static PREINJECT: str from "./injection/preinject_min.js");
 
 #[tauri::command]
-pub async fn get_injection_js(theme_js: &str) -> Result<String, ()> {
+pub async fn get_injection_js(theme_js: &str) -> Result<String, String> {
+  validate_payload_size(theme_js, MAX_JAVASCRIPT_BYTES, "Theme JavaScript")?;
+
   let theme_rxg = Regex::new(r"/\*! __THEMES__ \*/").unwrap();
   let injection_js = INJECTION.clone();
   let rewritten_all = theme_rxg

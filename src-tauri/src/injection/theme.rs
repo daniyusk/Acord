@@ -1,6 +1,14 @@
-use std::fs;
+use std::{fs, io::Read};
 
-use crate::{config::get_config, util::paths::get_theme_dir};
+use crate::{
+  config::get_config,
+  util::{
+    input_validation::{
+      normalize_css_file_name, validate_http_url, validate_payload_size, MAX_CSS_BYTES,
+    },
+    paths::get_theme_dir,
+  },
+};
 
 fn theme_is_enabled(name: String) -> bool {
   let config = get_config();
@@ -64,37 +72,47 @@ pub fn get_enabled_themes() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub fn theme_from_link(link: String, filename: Option<String>) -> String {
-  let theme_name = filename
-    .unwrap_or(link.split('/').next_back().unwrap_or("unnamed").to_string())
-    .split('.')
-    .next()
-    .unwrap_or("unnamed")
-    .to_string();
+pub fn theme_from_link(link: String, filename: Option<String>) -> Result<String, String> {
+  let link = validate_http_url(&link)?;
+  let name = filename.unwrap_or_else(|| {
+    link
+      .path_segments()
+      .and_then(|mut segments| segments.next_back())
+      .filter(|segment| !segment.is_empty())
+      .unwrap_or("unnamed")
+      .to_string()
+  });
+  let filename = normalize_css_file_name(&name)?;
 
-  let mut filename = theme_name.clone();
+  let client = reqwest::blocking::Client::builder()
+    .redirect(reqwest::redirect::Policy::none())
+    .build()
+    .map_err(|error| format!("Failed to create HTTP client: {error}"))?;
+  let mut response = client
+    .get(link)
+    .send()
+    .map_err(|error| format!("Failed to fetch theme: {error}"))?;
 
-  if theme_name.is_empty() {
-    return String::new();
+  if !response.status().is_success() {
+    return Err(format!("Theme request failed with status {}", response.status()));
   }
 
-  if !filename.ends_with(".css") {
-    filename.push_str(".css");
+  if response
+    .content_length()
+    .is_some_and(|length| length > MAX_CSS_BYTES as u64)
+  {
+    return Err("Theme is too large".to_string());
   }
 
-  let resp = reqwest::blocking::get(&link);
+  let mut theme = String::new();
+  response
+    .take(MAX_CSS_BYTES as u64 + 1)
+    .read_to_string(&mut theme)
+    .map_err(|error| format!("Failed to read theme: {error}"))?;
+  validate_payload_size(&theme, MAX_CSS_BYTES, "Theme")?;
 
-  if resp.is_err() {
-    return String::new();
-  }
+  fs::write(get_theme_dir().join(&filename), theme)
+    .map_err(|error| format!("Failed to write theme: {error}"))?;
 
-  let theme = resp.unwrap().text().unwrap_or_default();
-
-  let path = get_theme_dir().join(&filename);
-
-  if fs::write(path, theme).is_err() {
-    return String::new();
-  }
-
-  filename
+  Ok(filename)
 }

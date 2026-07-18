@@ -1,9 +1,15 @@
-use std::sync::atomic::Ordering;
+use std::{
+  io::Read,
+  sync::atomic::Ordering,
+};
 
 use crate::{
   functionality::tray::{set_tray_icon, TrayIcon, TRAY_STATE},
   log,
-  util::window_helpers::ultrashow,
+  util::{
+    input_validation::{is_discord_snowflake, validate_http_url, MAX_REMOTE_RESPONSE_BYTES},
+    window_helpers::ultrashow,
+  },
 };
 use tauri::Manager;
 
@@ -25,6 +31,11 @@ pub fn send_notification(
   icon: String,
   additional_data: Option<AdditionalData>,
 ) {
+  if title.len() > 256 || body.len() > 4096 {
+    log!("Skipping notification with oversized title or body");
+    return;
+  }
+
   // Flash the taskbar icon
   if !win.is_focused().unwrap_or(false) {
     let _ = win.request_user_attention(Some(tauri::UserAttentionType::Informational));
@@ -32,7 +43,25 @@ pub fn send_notification(
 
   // Write the result of the icon
   let app = win.app_handle();
-  let client = reqwest::blocking::Client::new();
+  let icon = match validate_http_url(&icon) {
+    Ok(icon) => icon,
+    Err(error) => {
+      log!("Skipping invalid notification icon URL: {error}");
+      send_notification_internal(app, title, body, String::new(), additional_data);
+      return;
+    }
+  };
+  let client = match reqwest::blocking::Client::builder()
+    .redirect(reqwest::redirect::Policy::none())
+    .build()
+  {
+    Ok(client) => client,
+    Err(error) => {
+      log!("Failed to create HTTP client for notification icon: {error}");
+      send_notification_internal(app, title, body, String::new(), additional_data);
+      return;
+    }
+  };
   let mut res = match client.get(icon).send() {
     Ok(res) => res,
     Err(e) => {
@@ -42,26 +71,40 @@ pub fn send_notification(
     }
   };
 
+  let content_type = res
+    .headers()
+    .get("content-type")
+    .and_then(|value| value.to_str().ok())
+    .unwrap_or_default();
+  if !res.status().is_success()
+    || !content_type.to_ascii_lowercase().starts_with("image/")
+    || res
+      .content_length()
+      .is_some_and(|length| length > MAX_REMOTE_RESPONSE_BYTES)
+  {
+    send_notification_internal(app, title, body, String::new(), additional_data);
+    return;
+  }
+
+  let mut icon_bytes = Vec::new();
+  if res
+    .take(MAX_REMOTE_RESPONSE_BYTES + 1)
+    .read_to_end(&mut icon_bytes)
+    .is_err()
+    || icon_bytes.len() > MAX_REMOTE_RESPONSE_BYTES as usize
+  {
+    send_notification_internal(app, title, body, String::new(), additional_data);
+    return;
+  }
+
   // Then write it to a temp file
   let mut tmp_file = std::env::temp_dir();
   tmp_file.push("acord_notif_icon.png");
 
-  let file = match std::fs::File::create(&tmp_file) {
-    Ok(file) => file,
-    Err(_) => {
-      log!("Failed to create temp file for notification icon");
-      send_notification_internal(app, title, body, String::new(), additional_data);
-      return;
-    }
-  };
-
-  // Write the file
-  match std::io::copy(&mut res, &mut std::io::BufWriter::new(file)) {
-    Ok(_) => {}
-    Err(_) => {
-      send_notification_internal(app, title, body, String::new(), additional_data);
-      return;
-    }
+  if std::fs::write(&tmp_file, icon_bytes).is_err() {
+    log!("Failed to create temp file for notification icon");
+    send_notification_internal(app, title, body, String::new(), additional_data);
+    return;
   }
 
   #[cfg(target_os = "windows")]
@@ -296,9 +339,21 @@ pub fn open_notification_data(win: &tauri::WebviewWindow, additional_data: Optio
 
   // Navigate to the guild/channel/message if provided
   if let Some(data) = &additional_data {
-    let guild_id = data.guild_id.as_deref().unwrap_or_default();
-    let channel_id = data.channel_id.as_deref().unwrap_or_default();
-    let message_id = data.message_id.as_deref().unwrap_or_default();
+    let guild_id = data
+      .guild_id
+      .as_deref()
+      .filter(|id| is_discord_snowflake(id))
+      .unwrap_or_default();
+    let channel_id = data
+      .channel_id
+      .as_deref()
+      .filter(|id| is_discord_snowflake(id))
+      .unwrap_or_default();
+    let message_id = data
+      .message_id
+      .as_deref()
+      .filter(|id| is_discord_snowflake(id))
+      .unwrap_or_default();
 
     let url = if !guild_id.is_empty() && !channel_id.is_empty() && !message_id.is_empty() {
       format!("/channels/{}/{}/{}", guild_id, channel_id, message_id)
@@ -313,10 +368,11 @@ pub fn open_notification_data(win: &tauri::WebviewWindow, additional_data: Optio
     };
 
     if !url.is_empty() {
+      let url = serde_json::to_string(&url).unwrap_or_else(|_| "\"\"".to_string());
       win
         .eval(format!(
           r#"
-      history.pushState(null, "", "{url}");
+      history.pushState(null, "", {url});
       window.dispatchEvent(new PopStateEvent("popstate"));
       "#
         ))
