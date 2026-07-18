@@ -183,7 +183,6 @@ fn main() {
       tauri_plugin_autostart::MacosLauncher::LaunchAgent,
       Some(vec!["--startup"]),
     ))
-    .plugin(tauri_plugin_process::init())
     .plugin(
       tauri_plugin_prevent_default::Builder::new()
         .with_flags(tauri_plugin_prevent_default::Flags::FIND)
