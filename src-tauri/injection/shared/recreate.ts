@@ -1,3 +1,5 @@
+import { openUrl } from '@tauri-apps/plugin-opener'
+
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 
 export async function proxyFetch() {
@@ -98,7 +100,7 @@ function isExternal(url: string) {
 }
 
 export function proxyOpen() {
-  // Make window.open become window.__TAURI__.shell.open
+  // Open external links with the system's default application
   window.nativeOpen = window.open
   window.open = (url: string | undefined | URL, target?: string, features?: string) => {
 
@@ -111,7 +113,9 @@ export function proxyOpen() {
     if (urlStr !== 'about:blank' && (target === '_blank' || !target) && isExternal(urlStr)) {
       console.log('[Proxy Open] External URL:', urlStr)
 
-      window.__TAURI__.shell.open(urlStr)
+      void openUrl(urlStr).catch((error: unknown) => {
+        console.error('[Proxy Open] Failed to open external URL:', error)
+      })
       return null
     }
 
