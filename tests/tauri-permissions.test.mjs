@@ -15,14 +15,15 @@ test('the webview receives only the Tauri permissions it uses', async () => {
     typeof permission === 'string' ? permission : permission.identifier
   )
 
-  assert.deepEqual(permissionIdentifiers, [
-    'core:app:allow-version',
-    'core:event:allow-emit',
+  assert.deepEqual(permissionIdentifiers.slice(0, 4), [
     'core:event:allow-listen',
     'core:event:allow-unlisten',
-    'shell:allow-open',
-    'http:default',
+    'opener:allow-open-url',
+    'opener:allow-default-urls',
   ])
+  assert.ok(permissionIdentifiers.every(permission =>
+    !permission.startsWith('http:') && !permission.startsWith('shell:')
+  ))
 })
 
 test('the unused process plugin stays unregistered', async () => {

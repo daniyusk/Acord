@@ -31,7 +31,7 @@ use super::rpc::start_rpc_server;
 use super::tray::create_tray;
 
 pub fn configure(window: &tauri::WebviewWindow) {
-  let config = get_config();
+  let _config = get_config();
   let handle = window.app_handle();
 
   // Set the user agent to one that enables all normal Discord features
@@ -53,7 +53,7 @@ pub fn configure(window: &tauri::WebviewWindow) {
   // begin the RPC server if needed
   #[cfg(feature = "rpc")]
   #[cfg(not(target_os = "macos"))]
-  if config.rpc_server.unwrap_or(false) {
+  if _config.rpc_server.unwrap_or(false) {
     let win = window.clone();
     std::thread::spawn(|| {
       start_rpc_server(win);
@@ -68,7 +68,7 @@ pub fn configure(window: &tauri::WebviewWindow) {
 
   #[cfg(feature = "hotkeys")]
   #[cfg(not(target_os = "macos"))]
-  if config.keybinds_enabled.unwrap_or(false) {
+  if _config.keybinds_enabled.unwrap_or(false) {
     log!("Starting global keybind watcher...");
     super::hotkeys::start_keybind_watcher(window);
   }
@@ -76,7 +76,7 @@ pub fn configure(window: &tauri::WebviewWindow) {
   #[cfg(feature = "blur")]
   apply_effect(
     window.clone(),
-    config.blur.unwrap_or("none".to_string()).as_str(),
+    _config.blur.unwrap_or("none".to_string()).as_str(),
   );
 
   create_tray(handle).unwrap_or_else(|e| log!("Error creating tray icon: {:?}", e));

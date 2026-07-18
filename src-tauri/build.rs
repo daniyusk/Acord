@@ -8,7 +8,6 @@ fn main() {
         "git_hash",
         "app_version",
         "frontend_ready",
-        "extension_injected",
         "minimize",
         "toggle_maximize",
         "set_decorations",
@@ -60,7 +59,6 @@ fn main() {
         "open_themes",
         "open_plugins",
         "open_extensions",
-        "open_external_url",
         "fetch_image",
         #[cfg(feature = "blur")]
         "available_blurs",

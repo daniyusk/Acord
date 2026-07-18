@@ -20,6 +20,8 @@
   "permissions": [
     "core:event:allow-listen",
     "core:event:allow-unlisten",
+    "opener:allow-open-url",
+    "opener:allow-default-urls",
     "allow-app-version",
     "allow-default-config",
     "allow-fetch-image",
@@ -34,7 +36,6 @@
     "allow-load-mods-css",
     "allow-load-plugins",
     "allow-localize-imports",
-    "allow-open-external-url",
     "allow-open-themes",
     "allow-read-config-file",
     "allow-restart-in-safemode",

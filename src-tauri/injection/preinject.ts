@@ -3,7 +3,9 @@ import { extraCssChangeWatch, safemodeTimer, typingAnim } from './shared/ui'
 import { cssSanitize, fetchImage, isJson, waitForApp, waitForElm, saferEval } from './shared/util'
 import { waitForElmEx } from './shared/wait_elm'
 import { invoke } from '@tauri-apps/api/core'
-import { listen, TauriEvent, type Event as TauriEventPayload } from '@tauri-apps/api/event'
+import { listen, TauriEvent } from '@tauri-apps/api/event'
+
+type AppConfig = Record<string, unknown>
 
 // Let's expose some stuff for use in plugins and such
 window.Dorion = {
@@ -18,15 +20,14 @@ window.Dorion = {
   shouldShowUnreadBadge: false
 }
 
-async function readConfig() {
-  const { invoke } = window.__TAURI__.core
+async function readConfig(): Promise<AppConfig> {
   const serializedConfig = await invoke<string>('read_config_file')
 
   if (serializedConfig && isJson(serializedConfig)) {
-    return JSON.parse(serializedConfig) as Record<string, unknown>
+    return JSON.parse(serializedConfig) as AppConfig
   }
 
-  const defaultConfig = await invoke<Record<string, unknown>>('default_config')
+  const defaultConfig = await invoke<AppConfig>('default_config')
   await invoke<void>('write_config_file', {
     contents: JSON.stringify(defaultConfig)
   })
@@ -45,38 +46,15 @@ async function readConfig() {
   proxyAddEventListener()
   proxyNotification()
 
-  while (!window.__TAURI__) {
-    console.log('Waiting for definition...')
-    await timeout(50)
-  }
-
-  await window.__TAURI__.event.emit('js_context_loaded', null)
-
-  proxyFetch()
-
   console.log('Tauri modules initialized!')
 
   extraCssChangeWatch()
   proxyOpen()
 
-  const platform = await window.__TAURI__.core.invoke('get_platform')
+  const platform = await invoke<string>('get_platform')
   document.documentElement.setAttribute('data-dorion-platform', platform)
 
-  const { invoke } = window.__TAURI__.core
-  const config = await invoke('read_config_file')
-
-  window.__DORION_CONFIG__ = isJson(config) ? JSON.parse(config) : {}
-
-  // Recreate config if there is an issue
-  if (!Object.keys(config).length || !config) {
-    const defaultConf = await invoke('default_config')
-    // Write
-    await invoke('write_config_file', {
-      config: defaultConf
-    })
-
-    window.__DORION_CONFIG__ = JSON.parse(defaultConf)
-  }
+  window.__DORION_CONFIG__ = await readConfig()
 
   const debug = !window.__DORION_CONFIG__.client_plugins
   console.log(window.__DORION_CONFIG__)
@@ -116,22 +94,7 @@ async function readConfig() {
 })()
 
 async function init() {
-  const { event, app } = window.__TAURI__
-  const { invoke } = window.__TAURI__.core
-  const config = await invoke('read_config_file')
-
-  window.__DORION_CONFIG__ = isJson(config) ? JSON.parse(config) : {}
-
-  // Recreate config if there is an issue
-  if (!Object.keys(config).length || !config) {
-    const defaultConf = await invoke('default_config')
-    // Write
-    await invoke('write_config_file', {
-      config: defaultConf
-    })
-
-    window.__DORION_CONFIG__ = JSON.parse(defaultConf)
-  }
+  window.__DORION_CONFIG__ = await readConfig()
 
   window.Dorion.shouldShowUnreadBadge = window.__DORION_CONFIG__.unread_badge
 
@@ -162,13 +125,11 @@ async function init() {
     window.dispatchEvent(event)
   }
 
-  event.listen('beforeunload', dispatchBeforeUnload)
-  event.listen(event.TauriEvent.WINDOW_CLOSE_REQUESTED, dispatchBeforeUnload)
+  void listen('beforeunload', dispatchBeforeUnload)
+  void listen(TauriEvent.WINDOW_CLOSE_REQUESTED, dispatchBeforeUnload)
 
   // Start the loading_log event listener
-  const logUnlisten = await event.listen('loading_log', (event: TauriEvent) => {
-    const log = event.payload as string
-
+  const logUnlisten = await listen<string>('loading_log', (event) => {
     updateOverlay({
       logs: event.payload
     })
@@ -300,8 +261,7 @@ async function handleClientModThemeInjection() {
  * Display the splashscreen
  */
 async function displayLoadingTop() {
-  const { invoke } = window.__TAURI__.core
-  const html = await invoke('get_index')
+  const html = await invoke<string>('get_index')
   const loadingContainer = document.createElement('div') satisfies HTMLDivElement
   loadingContainer.id = 'loadingContainer'
   loadingContainer.innerHTML = html

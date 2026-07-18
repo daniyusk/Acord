@@ -30,7 +30,7 @@ const injectionSource = readTypeScriptTree('src-tauri/injection')
 test('keeps the global Tauri API disabled for remote content', () => {
   assert.equal(tauriConfig.app.withGlobalTauri, false)
   assert.doesNotMatch(injectionSource, /window\.__TAURI__/)
-  assert.equal(packageJson.dependencies['@tauri-apps/api'], '^2.11.1')
+  assert.equal(packageJson.dependencies['@tauri-apps/api'], '2.11.1')
 })
 
 test('limits the remote capability to supported Discord origins and the main window', () => {

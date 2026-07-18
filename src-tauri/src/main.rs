@@ -179,8 +179,7 @@ fn main() {
 
   builder
     .plugin(tauri_plugin_deep_link::init())
-    .plugin(tauri_plugin_http::init())
-    .plugin(tauri_plugin_shell::init())
+    .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_autostart::init(
       tauri_plugin_autostart::MacosLauncher::LaunchAgent,
       Some(vec!["--startup"]),
@@ -196,7 +195,6 @@ fn main() {
       git_hash,
       app_version,
       functionality::configure::frontend_ready,
-      functionality::extension::extension_injected,
       functionality::window::minimize,
       functionality::window::toggle_maximize,
       #[cfg(not(target_os = "macos"))]
@@ -256,7 +254,6 @@ fn main() {
       helpers::open_themes,
       helpers::open_plugins,
       helpers::open_extensions,
-      helpers::open_external_url,
       helpers::fetch_image,
       #[cfg(feature = "blur")]
       window::blur::available_blurs,

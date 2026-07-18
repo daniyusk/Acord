@@ -44,20 +44,6 @@ pub fn validate_http_url(value: &str) -> Result<Url, String> {
   Ok(url)
 }
 
-pub fn validate_external_url(value: &str) -> Result<Url, String> {
-  if value.is_empty() || value.len() > MAX_URL_BYTES {
-    return Err("URL must be between 1 and 2048 bytes".to_string());
-  }
-
-  let url = Url::parse(value).map_err(|error| format!("Invalid URL: {error}"))?;
-  match url.scheme() {
-    "http" | "https" => validate_http_url(value),
-    "mailto" | "tel" if !url.path().is_empty() => Ok(url),
-    "mailto" | "tel" => Err("External URL must include a destination".to_string()),
-    _ => Err("Only HTTP, HTTPS, mailto, and tel URLs are allowed".to_string()),
-  }
-}
-
 pub fn validate_file_name(value: &str) -> Result<(), String> {
   if value.is_empty() {
     return Err("File name cannot be empty".to_string());
@@ -69,7 +55,10 @@ pub fn validate_file_name(value: &str) -> Result<(), String> {
 
   if value.chars().any(|character| {
     character.is_control()
-      || matches!(character, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|')
+      || matches!(
+        character,
+        '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|'
+      )
   }) {
     return Err("File name contains an invalid path character".to_string());
   }
@@ -108,7 +97,9 @@ pub fn validate_payload_size(value: &str, max_bytes: usize, label: &str) -> Resu
 }
 
 pub fn is_discord_snowflake(value: &str) -> bool {
-  !value.is_empty() && value.len() <= 20 && value.chars().all(|character| character.is_ascii_digit())
+  !value.is_empty()
+    && value.len() <= 20
+    && value.chars().all(|character| character.is_ascii_digit())
 }
 
 fn validate_public_ip(ip: IpAddr) -> Result<(), String> {
@@ -147,8 +138,8 @@ fn validate_public_ip(ip: IpAddr) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
   use super::{
-    is_discord_snowflake, normalize_css_file_name, validate_external_url, validate_file_name,
-    validate_http_url, validate_payload_size,
+    is_discord_snowflake, normalize_css_file_name, validate_file_name, validate_http_url,
+    validate_payload_size,
   };
 
   #[test]
@@ -176,24 +167,11 @@ mod tests {
   }
 
   #[test]
-  fn restricts_external_url_schemes() {
-    for url in [
-      "https://example.com",
-      "http://example.com",
-      "mailto:security@example.com",
-      "tel:+12025550123",
-    ] {
-      assert!(validate_external_url(url).is_ok(), "{url} should be allowed");
-    }
-
-    for url in ["file:///etc/passwd", "javascript:alert(1)", "mailto:", "tel:"] {
-      assert!(validate_external_url(url).is_err(), "{url} should be rejected");
-    }
-  }
-
-  #[test]
   fn normalizes_and_validates_css_file_names() {
-    assert_eq!(normalize_css_file_name("Midnight.CSS").unwrap(), "Midnight.css");
+    assert_eq!(
+      normalize_css_file_name("Midnight.CSS").unwrap(),
+      "Midnight.css"
+    );
     assert_eq!(normalize_css_file_name("midnight").unwrap(), "midnight.css");
     assert!(normalize_css_file_name("").is_err());
     assert!(validate_file_name("theme.css").is_ok());
@@ -206,7 +184,10 @@ mod tests {
       "theme\0.css",
       oversized.as_str(),
     ] {
-      assert!(validate_file_name(name).is_err(), "{name:?} should be rejected");
+      assert!(
+        validate_file_name(name).is_err(),
+        "{name:?} should be rejected"
+      );
     }
   }
 

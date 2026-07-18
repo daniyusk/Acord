@@ -7,11 +7,12 @@ import { invoke } from '@tauri-apps/api/core'
 
   // Ensure top bar exists if we want it
   if (window.__DORION_CONFIG__.use_native_titlebar)
-    window.__TAURI__.core.invoke<void>('set_decorations', { enable: true }).catch(_e => { }) // This is allowed to fail
+    invoke<void>('set_decorations', { enable: true }).catch(() => { }) // This is allowed to fail
 
   initWindowsKeybinds()
   // Load up our extra css
   applyExtraCSS()
+  void invoke('frontend_ready')
 
   // The comment ahead is read by tauri and used to insert theme injection code
 

@@ -3,9 +3,7 @@ use base64::{engine::general_purpose, Engine as _};
 use std::{path::*, process::Command};
 
 use crate::log;
-use crate::util::input_validation::{
-  validate_external_url, validate_http_url, MAX_REMOTE_RESPONSE_BYTES,
-};
+use crate::util::input_validation::{validate_http_url, MAX_REMOTE_RESPONSE_BYTES};
 
 #[tauri::command]
 pub async fn fetch_image(url: String) -> Option<String> {
@@ -73,12 +71,6 @@ pub fn open_extensions() {
   let extension_folder = get_extensions_dir();
 
   open_folder(extension_folder).unwrap_or_default()
-}
-
-#[tauri::command]
-pub fn open_external_url(url: String) -> Result<(), String> {
-  let url = validate_external_url(&url)?;
-  open::that(url.as_str()).map_err(|error| format!("Failed to open external URL: {error}"))
 }
 
 fn open_folder(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {

@@ -19,12 +19,6 @@ pub struct Args {
   pub proxy: Option<String>,
 
   #[cfg(target_os = "windows")]
-  #[options(
-    help = "(windows only) set Acord to fallback to it's old style of fetching external resources"
-  )]
-  pub legacy_fetch: bool,
-
-  #[cfg(target_os = "windows")]
   #[options(help = "(windows only) additional arguments to pass to the webview process")]
   pub webview_args: String,
 
@@ -59,11 +53,6 @@ pub fn is_startup() -> bool {
 
 pub fn get_proxy() -> Option<String> {
   PARSED_ARGS.proxy.clone()
-}
-
-#[cfg(target_os = "windows")]
-pub fn is_legacy_fetch() -> bool {
-  PARSED_ARGS.legacy_fetch
 }
 
 #[cfg(target_os = "windows")]
