@@ -178,7 +178,7 @@ fn main() {
   builder
     .plugin(tauri_plugin_deep_link::init())
     .plugin(tauri_plugin_http::init())
-    .plugin(tauri_plugin_shell::init())
+    .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_autostart::init(
       tauri_plugin_autostart::MacosLauncher::LaunchAgent,
       Some(vec!["--startup"]),

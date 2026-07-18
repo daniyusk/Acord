@@ -1,14 +1,15 @@
-import { isJson } from './util'
+import { openUrl } from '@tauri-apps/plugin-opener'
+
+import { fetch as tauriFetch } from '@tauri-apps/plugin-http'
 
 export async function proxyFetch() {
   window.nativeFetch = window.fetch
 
-  const extensionInjected = await window.__TAURI__.core.invoke('extension_injected')
+  const extensionInjected = await window.__TAURI__.core.invoke<boolean>('extension_injected')
 
   console.log('[Proxy Fetch] Extension injected: ', extensionInjected)
 
   window.fetch = async (url, options) => {
-    const { http } = window.__TAURI__
     const discordReg = /https?:\/\/(?:[a-z]+\.)?(?:discord\.com|discordapp\.com)(?:\/.*)?/g
     const scienceReg = /\/api\/v.*\/(science|track)/g
 
@@ -17,39 +18,19 @@ export async function proxyFetch() {
       // Block science though!
       if (url.toString().match(scienceReg)) {
         console.log(`[Fetch Proxy] Blocked URL: ${url}`)
-        return
+        return new Response(null, {
+          status: 204,
+          statusText: 'No Content'
+        })
       }
 
       return window.nativeFetch(url, options)
     }
 
-    // If there is an options.body, check if it's valid JSON. if so, set that up
-    if (options && options?.body) {
-      const bodyContent = isJson(String(options.body)) ? http.Body.json(options.body) : typeof options.body === 'string' ? http.Body.text(options.body) : http.Body.bytes(options.body)
-      options.body = bodyContent
-    }
-
-    if (options && options?.headers) {
-      // Check if header object, if so convert back to Record<String, any>
-      if (options.headers instanceof Headers) {
-        const headers = {}
-
-        // @ts-expect-error Headers is iterable
-        for (const [key, value] of options.headers.entries()) {
-          // @ts-expect-error Headers is iterable
-          headers[key] = value
-        }
-
-        options.headers = headers
-      }
-    }
-
-    const response = await http.fetch(url, {
-      responseType: 3,
-      ...options
-    }).catch((e: Error) => console.error('[Proxy Fetch] Failed to fetch: ', e))
-
-    return response
+    return tauriFetch(url, options).catch((error: unknown) => {
+      console.error('[Proxy Fetch] Failed to fetch: ', error)
+      throw error
+    })
   }
 }
 
@@ -119,7 +100,7 @@ function isExternal(url: string) {
 }
 
 export function proxyOpen() {
-  // Make window.open become window.__TAURI__.shell.open
+  // Open external links with the system's default application
   window.nativeOpen = window.open
   window.open = (url: string | undefined | URL, target?: string, features?: string) => {
 
@@ -132,7 +113,9 @@ export function proxyOpen() {
     if (urlStr !== 'about:blank' && (target === '_blank' || !target) && isExternal(urlStr)) {
       console.log('[Proxy Open] External URL:', urlStr)
 
-      window.__TAURI__.shell.open(urlStr)
+      void openUrl(urlStr).catch((error: unknown) => {
+        console.error('[Proxy Open] Failed to open external URL:', error)
+      })
       return null
     }
 

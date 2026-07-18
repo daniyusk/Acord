@@ -6,7 +6,7 @@ import { initWindowsKeybinds } from './shared/windows_keybinds'
 
   // Ensure top bar exists if we want it
   if (window.__DORION_CONFIG__.use_native_titlebar)
-    window.__TAURI__.core.invoke('set_decorations', { enable: true }).catch(_e => { }) // This is allowed to fail
+    window.__TAURI__.core.invoke<void>('set_decorations', { enable: true }).catch(_e => { }) // This is allowed to fail
 
   initWindowsKeybinds()
   // Load up our extra css
