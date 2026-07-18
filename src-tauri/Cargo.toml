@@ -25,7 +25,6 @@ tauri = { version = "2.11", features = ["macos-private-api", "macos-proxy", "dev
 tauri-plugin-deep-link = "2.4"
 tauri-plugin-shell = { git = "https://github.com/SpikeHD/plugins-workspace.git", branch = "v2"}
 tauri-plugin-single-instance = { version = "2.3.0", features = ["deep-link"] }
-tauri-plugin-process = "=2.3.0"
 tauri-plugin-autostart = "2.5"
 tauri-plugin-http = "2.5"
 tauri-plugin-prevent-default = "2.1.2"
