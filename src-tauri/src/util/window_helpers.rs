@@ -10,6 +10,30 @@ static OS: &str = "(Macintosh; Intel Mac OS X 10_15_7)";
 #[cfg(target_os = "linux")]
 static OS: &str = "(X11; Linux x86_64)";
 
+const MIN_ZOOM_LEVEL: f64 = 0.25;
+const MAX_ZOOM_LEVEL: f64 = 5.0;
+
+fn sanitize_zoom_level(value: f64) -> f64 {
+  if value.is_finite() {
+    value.clamp(MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
+  } else {
+    1.0
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::sanitize_zoom_level;
+
+  #[test]
+  fn clamps_invalid_zoom_values() {
+    assert_eq!(sanitize_zoom_level(1.25), 1.25);
+    assert_eq!(sanitize_zoom_level(0.1), 0.25);
+    assert_eq!(sanitize_zoom_level(6.0), 5.0);
+    assert_eq!(sanitize_zoom_level(f64::NAN), 1.0);
+  }
+}
+
 fn useragent(chrome_version: Option<String>) -> String {
   let chrome_version = chrome_version.unwrap_or("131.0.0.0".to_string());
 
@@ -67,13 +91,13 @@ pub fn clear_cache() {
 pub fn window_zoom_level(win: tauri::WebviewWindow, value: Option<f64>) {
   win
     .with_webview(move |webview| unsafe {
-      let zoom = value.unwrap_or(
+      let zoom = sanitize_zoom_level(value.unwrap_or(
         get_config()
           .zoom
           .unwrap_or("1.0".to_string())
           .parse::<f64>()
           .unwrap_or(1.0),
-      );
+      ));
 
       webview.controller().SetZoomFactor(zoom).unwrap_or_default();
     })
@@ -83,13 +107,13 @@ pub fn window_zoom_level(win: tauri::WebviewWindow, value: Option<f64>) {
 #[cfg(not(target_os = "windows"))]
 #[tauri::command]
 pub fn window_zoom_level(win: tauri::WebviewWindow, value: Option<f64>) {
-  let zoom = value.unwrap_or(
+  let zoom = sanitize_zoom_level(value.unwrap_or(
     get_config()
       .zoom
       .unwrap_or("1.0".to_string())
       .parse::<f64>()
       .unwrap_or(1.0),
-  );
+  ));
 
   win
     .eval(format!("document.body.style.zoom = '{zoom}'"))

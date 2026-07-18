@@ -110,7 +110,9 @@ fn main() {
         config.themes = Option::from(vec![theme]);
         config.theme = Option::from("none".to_string());
 
-        set_config(config.clone());
+        if let Err(error) = set_config(config.clone()) {
+          log!("Failed to persist migrated configuration: {error}");
+        }
       }
     }
   }

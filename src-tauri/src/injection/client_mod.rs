@@ -28,14 +28,29 @@ pub static CLIENT_MODS: phf::Map<&'static str, ClientMod> = phf_map! {
   },
 };
 
+fn enabled_client_mods() -> Vec<String> {
+  filter_enabled_client_mods(get_config().client_mods.unwrap_or_default())
+}
+
+fn filter_enabled_client_mods(configured_mods: Vec<String>) -> Vec<String> {
+  let mut enabled_mods = Vec::new();
+
+  for mod_name in configured_mods {
+    if CLIENT_MODS.contains_key(mod_name.as_str()) && !enabled_mods.contains(&mod_name) {
+      enabled_mods.push(mod_name);
+    }
+  }
+
+  enabled_mods
+}
+
 #[tauri::command]
 pub fn available_mods() -> Vec<String> {
   CLIENT_MODS.keys().map(|s| s.to_string()).collect()
 }
 
 pub fn load_mods_js() -> String {
-  let config = get_config();
-  let mut enabled_mods = config.client_mods.unwrap_or_default();
+  let mut enabled_mods = enabled_client_mods();
 
   // if enabled_mods does not include shelter, add it and save the config
   if !enabled_mods.contains(&"Shelter".to_string()) {
@@ -45,7 +60,14 @@ pub fn load_mods_js() -> String {
     enabled_mods.insert(0, "Shelter".to_string());
     config.client_mods = Option::from(enabled_mods.clone());
 
-    write_config_file(serde_json::to_string(&config).unwrap());
+    match serde_json::to_string(&config) {
+      Ok(config) => {
+        if let Err(error) = write_config_file(config) {
+          log!("Failed to persist client mod configuration: {error}");
+        }
+      }
+      Err(error) => log!("Failed to serialize client mod configuration: {error}"),
+    }
   }
 
   let mut exec = String::new();
@@ -120,10 +142,26 @@ pub fn load_mods_js() -> String {
   exec
 }
 
+#[cfg(test)]
+mod tests {
+  use super::filter_enabled_client_mods;
+
+  #[test]
+  fn ignores_unknown_and_duplicate_client_mods() {
+    let enabled = filter_enabled_client_mods(vec![
+      "Unknown".to_string(),
+      "Shelter".to_string(),
+      "Shelter".to_string(),
+      "Vencord".to_string(),
+    ]);
+
+    assert_eq!(enabled, vec!["Shelter".to_string(), "Vencord".to_string()]);
+  }
+}
+
 #[tauri::command]
 pub fn load_mods_css() -> String {
-  let config = get_config();
-  let enabled_mods = config.client_mods.unwrap_or_default();
+  let enabled_mods = enabled_client_mods();
   let mut exec = String::new();
 
   let mut tasks = Vec::new();

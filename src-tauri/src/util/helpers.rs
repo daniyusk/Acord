@@ -3,16 +3,29 @@ use base64::{engine::general_purpose, Engine as _};
 use std::{path::*, process::Command};
 
 use crate::log;
+use crate::util::input_validation::{validate_http_url, MAX_REMOTE_RESPONSE_BYTES};
 
 #[tauri::command]
 pub async fn fetch_image(url: String) -> Option<String> {
-  let client = reqwest::Client::new();
+  let url = validate_http_url(&url).ok()?;
+  let client = reqwest::Client::builder()
+    .redirect(reqwest::redirect::Policy::none())
+    .build()
+    .ok()?;
   let response = client
     .get(url)
     .header("User-Agent", "Acord")
     .send()
     .await
-    .unwrap();
+    .ok()?;
+
+  if !response.status().is_success()
+    || response
+      .content_length()
+      .is_some_and(|length| length > MAX_REMOTE_RESPONSE_BYTES)
+  {
+    return None;
+  }
 
   // extract the content type
   let content_type = response
@@ -25,11 +38,14 @@ pub async fn fetch_image(url: String) -> Option<String> {
       String::new()
     });
 
-  if !content_type.starts_with("image") {
+  if !content_type.to_ascii_lowercase().starts_with("image/") {
     return None;
   }
 
-  let bytes = response.bytes().await.unwrap();
+  let bytes = response.bytes().await.ok()?;
+  if bytes.len() > MAX_REMOTE_RESPONSE_BYTES as usize {
+    return None;
+  }
   let base64 = general_purpose::STANDARD.encode(bytes);
   let image = format!("data:{content_type};base64,{base64}");
 
