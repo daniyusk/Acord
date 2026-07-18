@@ -1,6 +1,9 @@
 export {}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+type TauriGlobal = typeof import('@tauri-apps/api')
+type TauriShell = typeof import('@tauri-apps/plugin-shell')
+
 declare global {
   interface Window {
     SHELTER_INJECTOR_PLUGINS: Record<string, [string, Record<string, unknown>]> 
@@ -15,6 +18,9 @@ declare global {
           WINDOW_RESIZED: string
           WINDOW_CLOSE_REQUESTED: string
         }
+      }
+      shell: {
+        open: (path: string) => void
       }
       app: {
         getVersion: () => Promise<string>,
