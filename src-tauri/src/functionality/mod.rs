@@ -3,6 +3,8 @@ pub mod configure;
 pub mod diagnostics;
 pub mod extension;
 pub mod idle;
+#[cfg(target_os = "linux")]
+pub mod linux_screen_share;
 
 #[cfg(feature = "hotkeys")]
 #[cfg(not(target_os = "macos"))]

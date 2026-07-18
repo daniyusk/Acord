@@ -6,7 +6,11 @@ use webkit2gtk::{
   PermissionRequestExt, SecurityManagerExt, SettingsExt, WebContextExt, WebView, WebViewExt,
 };
 
-use crate::gpu::disable_hardware_accel_linux;
+use crate::{
+  config::get_config,
+  functionality::linux_screen_share::log_linux_screen_share_diagnostics,
+  gpu::disable_hardware_accel_linux,
+};
 use crate::log;
 
 pub fn configure(window: &tauri::WebviewWindow) {
@@ -14,6 +18,10 @@ pub fn configure(window: &tauri::WebviewWindow) {
 
   disable_hardware_accel_linux(window);
   enable_webrtc(window);
+
+  if get_config().rtc_diagnostics.unwrap_or(false) {
+    log_linux_screen_share_diagnostics();
+  }
 
   // Extension patch
   window
