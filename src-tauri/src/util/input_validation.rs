@@ -44,6 +44,20 @@ pub fn validate_http_url(value: &str) -> Result<Url, String> {
   Ok(url)
 }
 
+pub fn validate_external_url(value: &str) -> Result<Url, String> {
+  if value.is_empty() || value.len() > MAX_URL_BYTES {
+    return Err("URL must be between 1 and 2048 bytes".to_string());
+  }
+
+  let url = Url::parse(value).map_err(|error| format!("Invalid URL: {error}"))?;
+  match url.scheme() {
+    "http" | "https" => validate_http_url(value),
+    "mailto" | "tel" if !url.path().is_empty() => Ok(url),
+    "mailto" | "tel" => Err("External URL must include a destination".to_string()),
+    _ => Err("Only HTTP, HTTPS, mailto, and tel URLs are allowed".to_string()),
+  }
+}
+
 pub fn validate_file_name(value: &str) -> Result<(), String> {
   if value.is_empty() {
     return Err("File name cannot be empty".to_string());
@@ -133,8 +147,8 @@ fn validate_public_ip(ip: IpAddr) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
   use super::{
-    is_discord_snowflake, normalize_css_file_name, validate_file_name, validate_http_url,
-    validate_payload_size,
+    is_discord_snowflake, normalize_css_file_name, validate_external_url, validate_file_name,
+    validate_http_url, validate_payload_size,
   };
 
   #[test]
@@ -158,6 +172,22 @@ mod tests {
       oversized_url.as_str(),
     ] {
       assert!(validate_http_url(url).is_err(), "{url} should be rejected");
+    }
+  }
+
+  #[test]
+  fn restricts_external_url_schemes() {
+    for url in [
+      "https://example.com",
+      "http://example.com",
+      "mailto:security@example.com",
+      "tel:+12025550123",
+    ] {
+      assert!(validate_external_url(url).is_ok(), "{url} should be allowed");
+    }
+
+    for url in ["file:///etc/passwd", "javascript:alert(1)", "mailto:", "tel:"] {
+      assert!(validate_external_url(url).is_err(), "{url} should be rejected");
     }
   }
 

@@ -6,10 +6,11 @@ fn main() {
         // Commands omitted here cannot be invoked by a webview.
         "should_disable_plugins",
         "git_hash",
+        "app_version",
+        "frontend_ready",
         "extension_injected",
         "minimize",
         "toggle_maximize",
-        #[cfg(not(target_os = "macos"))]
         "set_decorations",
         "close",
         "clear_css_cache",
@@ -42,11 +43,6 @@ fn main() {
         "set_keybinds",
         #[cfg(all(feature = "hotkeys", not(target_os = "macos")))]
         "set_keybind",
-        #[cfg(all(
-          feature = "hotkeys",
-          not(target_os = "macos"),
-          not(target_os = "linux")
-        ))]
         "trigger_keys_pressed",
         "set_tray_icon",
         "get_injection_js",
@@ -64,6 +60,7 @@ fn main() {
         "open_themes",
         "open_plugins",
         "open_extensions",
+        "open_external_url",
         "fetch_image",
         #[cfg(feature = "blur")]
         "available_blurs",

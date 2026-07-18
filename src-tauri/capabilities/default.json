@@ -1,11 +1,12 @@
 {
-  "identifier": "default",
-  "description": "Default permissions",
-  "local": true,
+  "identifier": "remote-discord-main",
+  "description": "Minimum permissions required by Acord's injected code on supported Discord origins",
+  "local": false,
   "remote": {
     "urls": [
       "https://discord.com/*",
-      "https://*.discord.com/*"
+      "https://canary.discord.com/*",
+      "https://ptb.discord.com/*"
     ]
   },
   "platforms": [
@@ -17,32 +18,28 @@
     "main"
   ],
   "permissions": [
-    "core:path:default",
-    "core:event:default",
-    "core:window:default",
-    "core:app:default",
-    "core:resources:default",
-    "core:menu:default",
-    "core:tray:default",
-    "core:window:allow-set-fullscreen",
-    "core:window:allow-start-dragging",
-    "core:webview:default",
-    "core:webview:allow-set-webview-zoom",
-    "shell:default",
-    "process:default",
-    "autostart:default",
-    "deep-link:default",
-    "window-state:default",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "https://**/*"
-        },
-        {
-          "url": "http://**/*"
-        }
-      ]
-    }
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-app-version",
+    "allow-default-config",
+    "allow-fetch-image",
+    "allow-frontend-ready",
+    "allow-get-enabled-themes",
+    "allow-get-extra-css",
+    "allow-get-index",
+    "allow-get-injection-js",
+    "allow-get-os-accent",
+    "allow-get-platform",
+    "allow-get-themes",
+    "allow-load-mods-css",
+    "allow-load-plugins",
+    "allow-localize-imports",
+    "allow-open-external-url",
+    "allow-open-themes",
+    "allow-read-config-file",
+    "allow-restart-in-safemode",
+    "allow-set-decorations",
+    "allow-trigger-keys-pressed",
+    "allow-write-config-file"
   ]
 }

@@ -4,15 +4,6 @@ export {}
 declare global {
   interface Window {
     SHELTER_INJECTOR_PLUGINS: Record<string, [string, Record<string, unknown>]> 
-    __TAURI__: {
-      shell: {
-        open: (path: string) => void
-      }
-      http: any
-      [key: string]: unknown
-    }
-
-    nativeFetch: typeof fetch
     __DORION_CONFIG__: Record<string, any>
     __DORION_INIT__: boolean
     __DORION_REAL_INIT__: boolean

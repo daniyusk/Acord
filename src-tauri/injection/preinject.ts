@@ -1,10 +1,9 @@
-import { badPostMessagePatch, proxyFetch, proxyXHR, proxyAddEventListener, proxyOpen, proxyNotification } from './shared/recreate'
+import { proxyXHR, proxyAddEventListener, proxyOpen, proxyNotification } from './shared/recreate'
 import { extraCssChangeWatch, safemodeTimer, typingAnim } from './shared/ui'
 import { cssSanitize, fetchImage, isJson, waitForApp, waitForElm, saferEval } from './shared/util'
 import { waitForElmEx } from './shared/wait_elm'
-import { getVersion } from '@tauri-apps/api/app'
 import { invoke } from '@tauri-apps/api/core'
-import { emit, listen, TauriEvent, type Event as TauriEventPayload } from '@tauri-apps/api/event'
+import { listen, TauriEvent, type Event as TauriEventPayload } from '@tauri-apps/api/event'
 
 // Let's expose some stuff for use in plugins and such
 window.Dorion = {
@@ -22,10 +21,6 @@ window.Dorion = {
 (async () => {
   // if we are in an iframe we don't really need to load anything, else we bork whatever is inside
   if (window.self !== window.top) {
-    // fixes activities
-    console.log('Patching postMessage...')
-    badPostMessagePatch()
-
     console.log('Stopping here, we are in an iframe!')
     return
   }
@@ -34,9 +29,7 @@ window.Dorion = {
   proxyAddEventListener()
   proxyNotification()
 
-  await emit('js_context_loaded')
-
-  proxyFetch()
+  await invoke('frontend_ready')
 
   console.log('Tauri modules initialized!')
 
@@ -118,7 +111,7 @@ async function init() {
 
   await invoke('load_plugins')
 
-  const version = await getVersion()
+  const version = await invoke<string>('app_version')
 
   await displayLoadingTop()
 

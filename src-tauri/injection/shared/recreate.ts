@@ -1,58 +1,4 @@
-import { isJson } from './util'
 import { invoke } from '@tauri-apps/api/core'
-
-export async function proxyFetch() {
-  window.nativeFetch = window.fetch
-
-  const extensionInjected = await invoke<boolean>('extension_injected')
-
-  console.log('[Proxy Fetch] Extension injected: ', extensionInjected)
-
-  window.fetch = async (url, options) => {
-    const { http } = window.__TAURI__
-    const discordReg = /https?:\/\/(?:[a-z]+\.)?(?:discord\.com|discordapp\.com)(?:\/.*)?/g
-    const scienceReg = /\/api\/v.*\/(science|track)/g
-
-    // If it matches, just let it go through native OR its a relative URL
-    if (extensionInjected || url.toString().match(discordReg) || url.toString().startsWith('ipc://') || url.toString().startsWith('/')) {
-      // Block science though!
-      if (url.toString().match(scienceReg)) {
-        console.log(`[Fetch Proxy] Blocked URL: ${url}`)
-        return
-      }
-
-      return window.nativeFetch(url, options)
-    }
-
-    // If there is an options.body, check if it's valid JSON. if so, set that up
-    if (options && options?.body) {
-      const bodyContent = isJson(String(options.body)) ? http.Body.json(options.body) : typeof options.body === 'string' ? http.Body.text(options.body) : http.Body.bytes(options.body)
-      options.body = bodyContent
-    }
-
-    if (options && options?.headers) {
-      // Check if header object, if so convert back to Record<String, any>
-      if (options.headers instanceof Headers) {
-        const headers = {}
-
-        // @ts-expect-error Headers is iterable
-        for (const [key, value] of options.headers.entries()) {
-          // @ts-expect-error Headers is iterable
-          headers[key] = value
-        }
-
-        options.headers = headers
-      }
-    }
-
-    const response = await http.fetch(url, {
-      responseType: 3,
-      ...options
-    }).catch((e: Error) => console.error('[Proxy Fetch] Failed to fetch: ', e))
-
-    return response
-  }
-}
 
 export function proxyXHR() {
   const open = XMLHttpRequest.prototype.open
@@ -120,7 +66,7 @@ function isExternal(url: string) {
 }
 
 export function proxyOpen() {
-  // Make window.open become window.__TAURI__.shell.open
+  // Open external links with the system handler through a constrained app command.
   window.nativeOpen = window.open
   window.open = (url: string | undefined | URL, target?: string, features?: string) => {
 
@@ -133,7 +79,9 @@ export function proxyOpen() {
     if (urlStr !== 'about:blank' && (target === '_blank' || !target) && isExternal(urlStr)) {
       console.log('[Proxy Open] External URL:', urlStr)
 
-      window.__TAURI__.shell.open(urlStr)
+      void invoke('open_external_url', { url: urlStr }).catch(error => {
+        console.error('[Proxy Open] Failed to open external URL:', error)
+      })
       return null
     }
 
@@ -146,14 +94,6 @@ export function proxyOpen() {
   }
 }
 
-export function badPostMessagePatch() {
-  // this should support all OS
-  // @ts-expect-error shut up
-  window.__TAURI_POST_MESSAGE__ = () => {
-    return null
-  }
-}
-
 export function proxyNotification() {
   let permVal = 'granted'
 
@@ -161,7 +101,7 @@ export function proxyNotification() {
   window.nativeNotification = window.Notification
 
   // @ts-expect-error shut up
-  window.Notification = function(...args) {
+  window.Notification = function(..._args) {
     // Stub this
   }
 

@@ -7,7 +7,7 @@ mod macos;
 #[cfg(target_os = "linux")]
 mod linux;
 
-use tauri::{Listener, Manager};
+use tauri::Manager;
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 
 use crate::{
@@ -73,24 +73,6 @@ pub fn configure(window: &tauri::WebviewWindow) {
     super::hotkeys::start_keybind_watcher(window);
   }
 
-  let event_window = window.clone();
-  window.listen("js_context_loaded", move |_| {
-    let window = &event_window;
-    let config = get_config();
-
-    // If we are opening on startup (which we know from the --startup arg), check to keep the window minimized
-    if !is_startup() || !config.startup_minimized.unwrap_or(false) {
-      // Now that we are ready, and shouldn't start minimized, show the window
-      window.show().unwrap_or_default();
-    } else {
-      window.hide().unwrap_or_default();
-    }
-
-    if config.start_maximized.unwrap_or(false) {
-      window.maximize().unwrap_or_default();
-    }
-  });
-
   #[cfg(feature = "blur")]
   apply_effect(
     window.clone(),
@@ -109,4 +91,20 @@ pub fn configure(window: &tauri::WebviewWindow) {
   linux::configure(window);
 
   window_zoom_level(window.clone(), None);
+}
+
+#[tauri::command]
+pub fn frontend_ready(window: tauri::WebviewWindow) {
+  let config = get_config();
+
+  // Keep startup launches minimized when requested; otherwise reveal the initialized webview.
+  if !is_startup() || !config.startup_minimized.unwrap_or(false) {
+    window.show().unwrap_or_default();
+  } else {
+    window.hide().unwrap_or_default();
+  }
+
+  if config.start_maximized.unwrap_or(false) {
+    window.maximize().unwrap_or_default();
+  }
 }

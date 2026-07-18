@@ -34,7 +34,7 @@ use crate::{
   functionality::{configure::configure, extension::load_extensions, window::setup_autostart},
   util::{
     logger,
-    url::{get_client_app_url, get_client_url},
+    url::{get_client_app_url, get_client_type, get_client_url},
     window_helpers::ultrashow,
   },
 };
@@ -78,6 +78,11 @@ fn git_hash() -> String {
 #[tauri::command]
 fn should_disable_plugins() -> bool {
   args::is_safemode()
+}
+
+#[tauri::command]
+fn app_version(app: tauri::AppHandle) -> String {
+  app.package_info().version.to_string()
 }
 
 fn main() {
@@ -149,10 +154,7 @@ fn main() {
       .as_ref()
       .unwrap_or(&String::from("0.0.0"))
   );
-  log!(
-    "Opening Discord {}",
-    config.client_type.unwrap_or("default".to_string())
-  );
+  log!("Opening Discord {}", get_client_type());
 
   let parsed = reqwest::Url::parse(&url).unwrap();
   let url_ext = tauri::WebviewUrl::External(parsed);
@@ -177,8 +179,6 @@ fn main() {
 
   builder
     .plugin(tauri_plugin_deep_link::init())
-    .plugin(tauri_plugin_http::init())
-    .plugin(tauri_plugin_shell::init())
     .plugin(tauri_plugin_autostart::init(
       tauri_plugin_autostart::MacosLauncher::LaunchAgent,
       Some(vec!["--startup"]),
@@ -193,6 +193,8 @@ fn main() {
     .invoke_handler(tauri::generate_handler![
       should_disable_plugins,
       git_hash,
+      app_version,
+      functionality::configure::frontend_ready,
       functionality::extension::extension_injected,
       functionality::window::minimize,
       functionality::window::toggle_maximize,
@@ -253,6 +255,7 @@ fn main() {
       helpers::open_themes,
       helpers::open_plugins,
       helpers::open_extensions,
+      helpers::open_external_url,
       helpers::fetch_image,
       #[cfg(feature = "blur")]
       window::blur::available_blurs,
