@@ -1,6 +1,9 @@
 use tauri::menu::{AboutMetadata, CheckMenuItemBuilder, MenuBuilder, SubmenuBuilder};
 
-use crate::config::{get_config, set_config};
+use crate::{
+  config::{get_config, set_config},
+  log,
+};
 
 use super::tray::get_tray;
 
@@ -53,7 +56,9 @@ pub fn create_menubar(app: &tauri::AppHandle) -> Result<(), tauri::Error> {
         tray.set_visible(!enable_tray_icon).unwrap_or_default();
 
         config.tray_icon_enabled = Option::from(!enable_tray_icon);
-        set_config(config);
+        if let Err(error) = set_config(config) {
+          log!("Failed to persist tray icon configuration: {error}");
+        }
       }
     }
   });

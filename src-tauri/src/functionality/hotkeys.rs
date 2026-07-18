@@ -33,7 +33,9 @@ pub fn set_keybinds(keybinds: HashMap<String, Vec<KeyStruct>>) {
   let mut config = get_config();
   config.keybinds = Some(keybinds);
 
-  set_config(config);
+  if let Err(error) = set_config(config) {
+    log!("Failed to persist keybind configuration: {error}");
+  }
 
   KEYBINDS_CHANGED.store(true, std::sync::atomic::Ordering::Relaxed);
 }
@@ -142,7 +144,9 @@ pub fn start_keybind_watcher(win: &tauri::WebviewWindow) {
 
     let mut config = get_config();
     config.push_to_talk = Some(state.state);
-    set_config(config);
+    if let Err(error) = set_config(config) {
+      log!("Failed to persist push-to-talk configuration: {error}");
+    }
   });
 }
 

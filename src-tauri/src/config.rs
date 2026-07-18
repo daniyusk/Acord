@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use crate::functionality::keyboard::KeyStruct;
 use crate::log;
-use crate::util::paths::get_config_file;
+use crate::util::paths::{get_config_file, validate_profile_name};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -152,6 +152,14 @@ impl Config {
     get_config_file();
   }
 
+  pub fn validate(&self) -> Result<(), String> {
+    if let Some(profile) = self.profile.as_deref() {
+      validate_profile_name(profile)?;
+    }
+
+    Ok(())
+  }
+
   pub fn from_file(path: PathBuf) -> Result<Self, Box<dyn std::error::Error>> {
     let config_str = fs::read_to_string(path)?;
     let config_str = config_str.as_str();
@@ -205,11 +213,12 @@ pub fn read_config_file() -> String {
 }
 
 #[tauri::command]
-pub fn write_config_file(contents: String) {
-  let config = Config::from_str(&contents).expect("Error parsing config!");
+pub fn write_config_file(contents: String) -> Result<(), String> {
+  let config = Config::from_str(&contents).map_err(|error| error.to_string())?;
+  config.validate()?;
   config
     .to_file(get_config_file())
-    .expect("Error writing config!");
+    .map_err(|error| format!("Error writing config: {error}"))
 }
 
 #[tauri::command]
@@ -225,16 +234,24 @@ pub fn get_config() -> Config {
 }
 
 #[tauri::command]
-pub fn set_config(config: Config) {
-  let config_str = match serde_json::to_string(&config) {
-    Ok(config_str) => config_str,
-    Err(e) => {
-      log!("Failed to serialize config, using default config!");
-      log!("Error: {}", e);
+pub fn set_config(config: Config) -> Result<(), String> {
+  config.validate()?;
 
-      return;
-    }
-  };
+  let config_str = serde_json::to_string(&config)
+    .map_err(|error| format!("Failed to serialize config: {error}"))?;
 
-  write_config_file(config_str);
+  write_config_file(config_str)
+}
+
+#[cfg(test)]
+mod tests {
+  use super::Config;
+
+  #[test]
+  fn rejects_configurations_with_unsafe_profile_names() {
+    let mut config = Config::default();
+    config.profile = Some("../outside".to_string());
+
+    assert!(config.validate().is_err());
+  }
 }

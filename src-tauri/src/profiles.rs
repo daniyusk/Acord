@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::{
   config::{get_config, Config},
   log,
-  util::paths::profiles_dir,
+  util::paths::{profile_path, profiles_dir},
 };
 
 pub fn init_profiles_folders() {
@@ -55,52 +55,47 @@ pub fn get_current_profile_folder() -> PathBuf {
   let profiles_folder = profiles_dir();
   let current_profile = get_config().profile.unwrap_or("default".to_string());
 
-  let profile_folder = profiles_folder.join(current_profile);
-
-  // If it doesn't exist, just use the default path
-  if !profile_folder.exists() {
-    return profiles_folder.join("default");
+  match profile_path(&profiles_folder, &current_profile) {
+    Ok(profile_folder) if profile_folder.exists() => profile_folder,
+    Ok(_) => profiles_folder.join("default"),
+    Err(error) => {
+      log!("Ignoring invalid profile name from config: {error}");
+      profiles_folder.join("default")
+    }
   }
-
-  profile_folder
 }
 
 #[tauri::command]
-pub fn create_profile(name: String) {
+pub fn create_profile(name: String) -> Result<(), String> {
   let profiles_folder = profiles_dir();
-
-  let new_profile_folder = profiles_folder.join(name);
+  let new_profile_folder = profile_path(&profiles_folder, &name)?;
 
   if !new_profile_folder.exists() {
-    std::fs::create_dir_all(new_profile_folder).unwrap_or_else(|_| {
-      log!("Failed to create profile folder!");
-    });
+    std::fs::create_dir_all(new_profile_folder)
+      .map_err(|error| format!("Failed to create profile folder: {error}"))?;
   }
+
+  Ok(())
 }
 
 #[tauri::command]
-pub fn delete_profile(name: String) {
+pub fn delete_profile(name: String) -> Result<(), String> {
+  let profiles_folder = profiles_dir();
+  let profile_folder = profile_path(&profiles_folder, &name)?;
+
   if name == "default" {
-    return;
+    return Ok(());
   }
 
-  let profiles_folder = profiles_dir();
-
-  let profile_folder = profiles_folder.join(name);
-
   if profile_folder.exists() {
-    std::fs::remove_dir_all(profile_folder).unwrap_or_else(|_| {
-      log!("Failed to delete profile folder!");
-    });
+    std::fs::remove_dir_all(profile_folder)
+      .map_err(|error| format!("Failed to delete profile folder: {error}"))?;
   }
 
   // Set config to "default"
-  let mut config: Config =
-    serde_json::from_str(&crate::config::read_config_file()).expect("Failed to read config file!");
+  let mut config: Config = get_config();
 
   config.profile = Some("default".to_string());
 
-  crate::config::write_config_file(
-    serde_json::to_string(&config).expect("Failed to convert config to string!"),
-  );
+  crate::config::set_config(config)
 }

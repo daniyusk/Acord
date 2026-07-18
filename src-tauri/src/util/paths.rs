@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+  fs,
+  path::{Component, Path, PathBuf},
+};
 
 use tauri::path::BaseDirectory;
 use tauri::Manager;
@@ -206,6 +209,36 @@ pub fn profiles_dir() -> PathBuf {
     .join("profiles")
 }
 
+pub fn validate_profile_name(name: &str) -> Result<(), String> {
+  if name.is_empty() {
+    return Err("Profile name cannot be empty".to_string());
+  }
+
+  if name.len() > 255 {
+    return Err("Profile name cannot exceed 255 bytes".to_string());
+  }
+
+  if name.chars().any(|character| {
+    character.is_control()
+      || matches!(character, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|')
+  }) {
+    return Err("Profile name contains an invalid path character".to_string());
+  }
+
+  let mut components = Path::new(name).components();
+  if !matches!(components.next(), Some(Component::Normal(_))) || components.next().is_some() {
+    return Err("Profile name must be a single directory name".to_string());
+  }
+
+  Ok(())
+}
+
+pub fn profile_path(profiles_dir: &Path, name: &str) -> Result<PathBuf, String> {
+  validate_profile_name(name)?;
+
+  Ok(profiles_dir.join(name))
+}
+
 pub fn get_webdata_dir() -> PathBuf {
   // Grab from args first, it should take precedence
   let profile = match args::get_profile() {
@@ -216,7 +249,14 @@ pub fn get_webdata_dir() -> PathBuf {
     }
   };
   let profiles = profiles_dir();
-  let dir = profiles.join(profile).join("webdata");
+  let profile_dir = match profile_path(&profiles, &profile) {
+    Ok(profile_dir) => profile_dir,
+    Err(error) => {
+      log!("Ignoring invalid profile name while resolving web data: {error}");
+      profiles.join("default")
+    }
+  };
+  let dir = profile_dir.join("webdata");
 
   // as a precaution, ensure the directory exists
   create_if_not_exists(&dir);
@@ -277,4 +317,44 @@ pub fn log_file_path() -> PathBuf {
   let appdata = dirs::config_dir().unwrap_or_default();
 
   appdata.join("acord").join("logs").join("latest.log")
+}
+
+#[cfg(test)]
+mod tests {
+  use std::path::Path;
+
+  use super::{profile_path, validate_profile_name};
+
+  #[test]
+  fn allows_single_directory_profile_names() {
+    for name in ["default", "Profile 1", "Jos\u{00e9}", ".private"] {
+      assert!(validate_profile_name(name).is_ok(), "{name} should be valid");
+    }
+  }
+
+  #[test]
+  fn rejects_path_traversal_and_platform_separators() {
+    for name in [
+      "",
+      ".",
+      "..",
+      "../outside",
+      "..\\outside",
+      "nested/profile",
+      "nested\\profile",
+      "C:\\profiles",
+      "/tmp/profile",
+      "profile\0name",
+    ] {
+      assert!(validate_profile_name(name).is_err(), "{name:?} should be rejected");
+    }
+  }
+
+  #[test]
+  fn joins_only_valid_profile_names() {
+    let root = Path::new("profiles");
+
+    assert_eq!(profile_path(root, "work").unwrap(), root.join("work"));
+    assert!(profile_path(root, "../outside").is_err());
+  }
 }

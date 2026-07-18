@@ -2,21 +2,27 @@ use crate::config::get_config;
 
 #[cfg(target_os = "windows")]
 pub fn clear_cache() {
-  use crate::util::paths::profiles_dir;
+  use crate::util::paths::{profile_path, profiles_dir};
   use std::fs;
 
   let profiles_dir = profiles_dir();
   let profile = get_config().profile.unwrap_or("default".to_string());
+  let profile_dir = match profile_path(&profiles_dir, &profile) {
+    Ok(profile_dir) => profile_dir,
+    Err(error) => {
+      crate::log!("Ignoring invalid profile name while clearing cache: {error}");
+      return;
+    }
+  };
 
   // Paths from profiles will be webdata/EBWebView/Default/[Cache|Code Cache]
-  let main_cache = profiles_dir
-    .join(&profile)
+  let main_cache = profile_dir
+    .clone()
     .join("webdata")
     .join("EBWebView")
     .join("Default")
     .join("Cache");
-  let code_cache = profiles_dir
-    .join(profile)
+  let code_cache = profile_dir
     .join("webdata")
     .join("EBWebView")
     .join("Default")

@@ -45,7 +45,14 @@ pub fn load_mods_js() -> String {
     enabled_mods.insert(0, "Shelter".to_string());
     config.client_mods = Option::from(enabled_mods.clone());
 
-    write_config_file(serde_json::to_string(&config).unwrap());
+    match serde_json::to_string(&config) {
+      Ok(config) => {
+        if let Err(error) = write_config_file(config) {
+          log!("Failed to persist client mod configuration: {error}");
+        }
+      }
+      Err(error) => log!("Failed to serialize client mod configuration: {error}"),
+    }
   }
 
   let mut exec = String::new();
