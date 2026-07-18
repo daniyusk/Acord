@@ -21,6 +21,10 @@
  https://discord.gg/agQ9mRdHMZ
 </div>
 
+## Fork and compatibility
+
+Acord is a fork of Dorion. Some internal names and plugin endpoints intentionally retain the `Dorion` name to preserve compatibility with upstream Shelter components. For example, `Dorion Helpers` continues to load from `https://spikehd.dev/shelter-plugins/dorion-helpers/`; this refers to the upstream plugin, not the Acord product name.
+
 # Download
 
 <table align="center">
