@@ -6,14 +6,12 @@ on:
     paths-ignore:
       - '**.lock'
       - '**.rs'
-      - '**.toml'
     branches:
       - main
   pull_request:
     paths-ignore:
       - '**.lock'
       - '**.rs'
-      - '**.toml'
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -50,3 +48,6 @@ jobs:
 
       - name: Run ESLint
         run: pnpm eslint ./src-tauri/injection/**/*.ts
+
+      - name: Validate Tauri security boundaries
+        run: pnpm test:security

@@ -1,7 +1,9 @@
-import { badPostMessagePatch, proxyFetch, proxyXHR, proxyAddEventListener, proxyOpen, proxyNotification } from './shared/recreate'
+import { proxyXHR, proxyAddEventListener, proxyOpen, proxyNotification } from './shared/recreate'
 import { extraCssChangeWatch, safemodeTimer, typingAnim } from './shared/ui'
-import { cssSanitize, fetchImage, isJson, waitForApp, waitForElm, saferEval, timeout } from './shared/util'
+import { cssSanitize, fetchImage, isJson, waitForApp, waitForElm, saferEval } from './shared/util'
 import { waitForElmEx } from './shared/wait_elm'
+import { invoke } from '@tauri-apps/api/core'
+import { listen, TauriEvent, type Event as TauriEventPayload } from '@tauri-apps/api/event'
 
 // Let's expose some stuff for use in plugins and such
 window.Dorion = {
@@ -35,10 +37,6 @@ async function readConfig() {
 (async () => {
   // if we are in an iframe we don't really need to load anything, else we bork whatever is inside
   if (window.self !== window.top) {
-    // fixes activities
-    console.log('Patching postMessage...')
-    badPostMessagePatch()
-
     console.log('Stopping here, we are in an iframe!')
     return
   }
@@ -56,15 +54,29 @@ async function readConfig() {
 
   proxyFetch()
 
-  console.log('__TAURI__ defined!')
+  console.log('Tauri modules initialized!')
 
   extraCssChangeWatch()
   proxyOpen()
 
-  const platform = await window.__TAURI__.core.invoke<string>('get_platform')
+  const platform = await window.__TAURI__.core.invoke('get_platform')
   document.documentElement.setAttribute('data-dorion-platform', platform)
 
-  window.__DORION_CONFIG__ = await readConfig()
+  const { invoke } = window.__TAURI__.core
+  const config = await invoke('read_config_file')
+
+  window.__DORION_CONFIG__ = isJson(config) ? JSON.parse(config) : {}
+
+  // Recreate config if there is an issue
+  if (!Object.keys(config).length || !config) {
+    const defaultConf = await invoke('default_config')
+    // Write
+    await invoke('write_config_file', {
+      config: defaultConf
+    })
+
+    window.__DORION_CONFIG__ = JSON.parse(defaultConf)
+  }
 
   const debug = !window.__DORION_CONFIG__.client_plugins
   console.log(window.__DORION_CONFIG__)
@@ -106,13 +118,26 @@ async function readConfig() {
 async function init() {
   const { event, app } = window.__TAURI__
   const { invoke } = window.__TAURI__.core
-  window.__DORION_CONFIG__ = await readConfig()
+  const config = await invoke('read_config_file')
+
+  window.__DORION_CONFIG__ = isJson(config) ? JSON.parse(config) : {}
+
+  // Recreate config if there is an issue
+  if (!Object.keys(config).length || !config) {
+    const defaultConf = await invoke('default_config')
+    // Write
+    await invoke('write_config_file', {
+      config: defaultConf
+    })
+
+    window.__DORION_CONFIG__ = JSON.parse(defaultConf)
+  }
 
   window.Dorion.shouldShowUnreadBadge = window.__DORION_CONFIG__.unread_badge
 
   await invoke<void>('load_plugins')
 
-  const version = await app.getVersion()
+  const version = await invoke<string>('app_version')
 
   await displayLoadingTop()
 
@@ -137,11 +162,13 @@ async function init() {
     window.dispatchEvent(event)
   }
 
-  await event.listen('beforeunload', dispatchBeforeUnload)
-  await event.listen(event.TauriEvent.WINDOW_CLOSE_REQUESTED, dispatchBeforeUnload)
+  event.listen('beforeunload', dispatchBeforeUnload)
+  event.listen(event.TauriEvent.WINDOW_CLOSE_REQUESTED, dispatchBeforeUnload)
 
   // Start the loading_log event listener
-  const logUnlisten = await event.listen<string>('loading_log', (event) => {
+  const logUnlisten = await event.listen('loading_log', (event: TauriEvent) => {
+    const log = event.payload as string
+
     updateOverlay({
       logs: event.payload
     })
@@ -194,8 +221,6 @@ async function updateOverlay(toUpdate: Record<string, string>) {
 }
 
 async function handleThemeInjection() {
-  const { invoke } = window.__TAURI__.core
-
   // This needs to exist for hot-switching to work
   const ts = document.createElement('style')
   ts.id = 'dorion-theme'
@@ -243,8 +268,6 @@ async function handleThemeInjection() {
 }
 
 async function handleClientModThemeInjection() {
-  const { invoke } = window.__TAURI__.core
-
   const ts = document.createElement('style')
   ts.id = 'dorion-client-mods-themes'
   document.body.appendChild(ts)
@@ -278,7 +301,7 @@ async function handleClientModThemeInjection() {
  */
 async function displayLoadingTop() {
   const { invoke } = window.__TAURI__.core
-  const html = await invoke<string>('get_index')
+  const html = await invoke('get_index')
   const loadingContainer = document.createElement('div') satisfies HTMLDivElement
   loadingContainer.id = 'loadingContainer'
   loadingContainer.innerHTML = html

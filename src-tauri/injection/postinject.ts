@@ -1,5 +1,6 @@
 import { applyExtraCSS } from './shared/ui'
 import { initWindowsKeybinds } from './shared/windows_keybinds'
+import { invoke } from '@tauri-apps/api/core'
 
 (async () => {
   console.log('Discord is loaded!')

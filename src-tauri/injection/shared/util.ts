@@ -1,4 +1,5 @@
 import { waitForElmEx } from './wait_elm'
+import { invoke } from '@tauri-apps/api/core'
 
 export function cssSanitize(css: string) {
   const style = document.createElement('style')
