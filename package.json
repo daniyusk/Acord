@@ -7,6 +7,8 @@
     "dev": "pnpm build:js && tauri dev",
     "build:updater": "cd updater && cargo build --release && cd .. && cp updater/target/release/updater src-tauri/updater",
     "preview": "vite preview",
+    "typecheck:injection": "tsc --project src-tauri/injection/tsconfig.json",
+    "test:security": "node --test tests/tauri-security.test.mjs tests/tauri-opener.test.mjs tests/tauri-permissions.test.mjs",
     "test:tauri-permissions": "node --test tests/tauri-permissions.test.mjs",
     "tauri": "tauri",
     "check:tauri-cli": "node scripts/check-tauri-cli-version.mjs",
