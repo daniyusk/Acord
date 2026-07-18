@@ -1,15 +1,21 @@
 use regex::Regex;
-use std::{fs, io::Read};
+use std::fs;
+
+#[cfg(not(target_os = "windows"))]
+use std::io::Read;
 
 use crate::log;
 use crate::util::{
-  input_validation::{
-    validate_file_name, validate_http_url, validate_payload_size, MAX_CSS_BYTES,
-    MAX_REMOTE_RESPONSE_BYTES,
-  },
+  input_validation::{validate_payload_size, MAX_CSS_BYTES},
   paths::get_theme_dir,
 };
 
+#[cfg(not(target_os = "windows"))]
+use crate::util::input_validation::{
+  validate_file_name, validate_http_url, MAX_REMOTE_RESPONSE_BYTES,
+};
+
+#[cfg(not(target_os = "windows"))]
 const MAX_CSS_IMPORTS: usize = 32;
 
 #[tauri::command]

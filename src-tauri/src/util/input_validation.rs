@@ -31,7 +31,13 @@ pub fn validate_http_url(value: &str) -> Result<Url, String> {
     return Err("Localhost URLs are not allowed".to_string());
   }
 
-  if let Ok(ip) = host.parse::<IpAddr>() {
+  // `Url::host_str` retains brackets around IPv6 literals, while `IpAddr`
+  // expects the bare address.
+  let ip_host = host
+    .strip_prefix('[')
+    .and_then(|value| value.strip_suffix(']'))
+    .unwrap_or(host);
+  if let Ok(ip) = ip_host.parse::<IpAddr>() {
     validate_public_ip(ip)?;
   }
 

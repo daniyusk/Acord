@@ -88,7 +88,7 @@ pub fn theme_from_link(link: String, filename: Option<String>) -> Result<String,
     .redirect(reqwest::redirect::Policy::none())
     .build()
     .map_err(|error| format!("Failed to create HTTP client: {error}"))?;
-  let mut response = client
+  let response = client
     .get(link)
     .send()
     .map_err(|error| format!("Failed to fetch theme: {error}"))?;

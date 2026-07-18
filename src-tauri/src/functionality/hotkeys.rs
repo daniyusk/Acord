@@ -48,7 +48,7 @@ pub fn set_keybinds(keybinds: HashMap<String, Vec<KeyStruct>>) -> Result<(), Str
 
 #[tauri::command]
 pub fn set_keybind(action: String, keys: Vec<KeyStruct>) -> Result<(), String> {
-  validate_action(&action)?;
+  validate_keybind_action(&action)?;
   validate_key_list(&keys)?;
 
   let mut keybinds = get_keybinds();

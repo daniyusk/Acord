@@ -23,7 +23,7 @@ pub async fn localize_js(url: String) -> String {
     }
   };
 
-  let response = match client.get(url).send().await {
+  let response = match client.get(url.clone()).send().await {
     Ok(r) => r,
     Err(e) => {
       log!("Request failed: {}", e);

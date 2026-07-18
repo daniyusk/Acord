@@ -62,7 +62,7 @@ pub fn send_notification(
       return;
     }
   };
-  let mut res = match client.get(icon).send() {
+  let res = match client.get(icon).send() {
     Ok(res) => res,
     Err(e) => {
       log!("Failed to fetch notification icon: {:?}", e);
@@ -197,7 +197,7 @@ fn send_notification_internal_windows(
     .text2(body.as_str())
     .sound(None);
 
-  if let Some(data) = &additional_data {
+  if additional_data.is_some() {
     toast = toast.on_activated({
       let additional_data = additional_data.clone();
 
