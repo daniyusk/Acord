@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
     "moduleResolution": "bundler",
     "lib": ["ESNext", "DOM"],
     "strict": true,
@@ -13,5 +12,9 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true
   },
-  "include": ["./**/*.ts", "global.d.ts", "../../tests/tauri-global.contract.ts"]
+  "include": [
+    "./**/*.ts",
+    "global.d.ts",
+    "../../tests/tauri-global.contract.ts"
+  ]
 }
