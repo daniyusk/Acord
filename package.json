@@ -8,7 +8,7 @@
     "build:updater": "cd updater && cargo build --release && cd .. && cp updater/target/release/updater src-tauri/updater",
     "preview": "vite preview",
     "typecheck:injection": "tsc --project src-tauri/injection/tsconfig.json",
-    "test:security": "node --test tests/tauri-security.test.mjs tests/tauri-opener.test.mjs tests/tauri-permissions.test.mjs tests/plugin-security.test.mjs tests/rtc-diagnostics.test.mjs tests/linux-screen-share.test.mjs",
+    "test:security": "node --test tests/tauri-security.test.mjs tests/tauri-opener.test.mjs tests/tauri-permissions.test.mjs tests/plugin-security.test.mjs tests/rtc-diagnostics.test.mjs tests/linux-screen-share.test.mjs tests/linux-media-support.test.mjs",
     "test:tauri-permissions": "node --test tests/tauri-permissions.test.mjs",
     "test:rust": "cargo test --manifest-path ./src-tauri/Cargo.toml --no-default-features",
     "test:runtime": "node scripts/smoke-test-binary.mjs",

@@ -28,6 +28,10 @@ Client mods, plugins, and themes are disabled by default. See the [security mode
 
 Optional [RTC diagnostics](docs/rtc-diagnostics.md) can help investigate call and stream quality without sending telemetry to a remote service.
 
+## Linux voice and video
+
+Voice, video, and screen sharing use WebKitGTK on Linux and are currently **experimental**. See the [Linux media support policy](docs/linux-media-support.md) for diagnostics, known limitations, and the Chromium-backend evaluation.
+
 ## Credits
 
 - [Dorion](https://github.com/SpikeHD/Dorion), the project this fork originated from.

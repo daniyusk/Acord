@@ -16,6 +16,9 @@ use crate::log;
 pub fn configure(window: &tauri::WebviewWindow) {
   let handle = window.app_handle().clone();
 
+  log!(
+    "Linux voice, video, and screen sharing use WebKitGTK and are experimental; enable rtc_diagnostics for local troubleshooting data"
+  );
   disable_hardware_accel_linux(window);
   enable_webrtc(window);
 
