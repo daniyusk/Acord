@@ -8,6 +8,7 @@
     "build:updater": "cd updater && cargo build --release && cd .. && cp updater/target/release/updater src-tauri/updater",
     "preview": "vite preview",
     "tauri": "tauri",
+    "check:tauri-cli": "node scripts/check-tauri-cli-version.mjs",
     "format": "cargo fmt --manifest-path ./src-tauri/Cargo.toml --all && prettier src -w",
     "format:updater": "cargo fmt --manifest-path ./updater/Cargo.toml --all",
     "lint": "eslint ./src-tauri/injection/**/*.ts",
