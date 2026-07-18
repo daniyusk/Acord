@@ -16,9 +16,6 @@ declare global {
           WINDOW_CLOSE_REQUESTED: string
         }
       }
-      shell: {
-        open: (path: string) => void
-      }
       app: {
         getVersion: () => Promise<string>,
       }
