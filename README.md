@@ -1,22 +1,22 @@
 <h1 align="center">
- <img height="100px" src="https://raw.githubusercontent.com/SpikeHD/Dorion/main/src-tauri/icons/icon.png" />
+ <img height="100px" src="https://raw.githubusercontent.com/daniyusk/Acord/main/src-tauri/icons/icon.png" />
  <br />
- Dorion
+ Acord
 </h1>
 <div align="center">
- <img src="https://img.shields.io/github/actions/workflow/status/SpikeHD/Dorion/build.yml" />
- <img src="https://img.shields.io/github/package-json/v/SpikeHD/Dorion" />
- <img src="https://img.shields.io/github/repo-size/SpikeHD/Dorion" />
+ <img src="https://img.shields.io/github/actions/workflow/status/daniyusk/Acord/build.yml" />
+ <img src="https://img.shields.io/github/package-json/v/daniyusk/Acord" />
+ <img src="https://img.shields.io/github/repo-size/daniyusk/Acord" />
 </div>
 <div align="center">
- <img src="https://img.shields.io/github/commit-activity/m/SpikeHD/Dorion" />
- <img src="https://img.shields.io/github/release-date/SpikeHD/Dorion" />
- <img src="https://img.shields.io/github/stars/SpikeHD/Dorion" />
- <img src="https://img.shields.io/github/downloads/SpikeHD/Dorion/total" />
+ <img src="https://img.shields.io/github/commit-activity/m/daniyusk/Acord" />
+ <img src="https://img.shields.io/github/release-date/daniyusk/Acord" />
+ <img src="https://img.shields.io/github/stars/daniyusk/Acord" />
+ <img src="https://img.shields.io/github/downloads/daniyusk/Acord/total" />
 </div>
 
 <div align="center">
- Dorion is an alternative Discord client aimed towards lower-spec or storage-sensitive PCs that supports themes, plugins, and more!
+ Acord is an alternative Discord client aimed towards lower-spec or storage-sensitive PCs that supports themes, plugins, and more!
  <br />
  https://discord.gg/agQ9mRdHMZ
 </div>
@@ -42,34 +42,34 @@
   <tr>
     <td width="23%">
       <div align="center">
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2_x64_en-US.msi">x86_64</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2_x64_en-US.msi">x86_64</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/Dorion/releases/download/v6.12.2/Dorion_6.12.2.arm64-setup.exe">ARM</a>
+        <a href="https://github.com/daniyusk/Acord/releases/download/v6.12.2/Acord_6.12.2.arm64-setup.exe">ARM</a>
       </div>
     </td>
     <td width="23%">
       <div align="center">
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2_x64.dmg">x86_64</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2_x64.dmg">x86_64</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2_aarch64.dmg">ARM</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2_aarch64.dmg">ARM</a>
       </div>
     </td>
     <td width="23%">
       <div align="center">
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2_amd64.deb">x86_64</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2_amd64.deb">x86_64</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2_armhf.deb">ARM v7</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2_armhf.deb">ARM v7</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2_arm64.deb">ARM64</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2_arm64.deb">ARM64</a>
       </div>
     </td>
     <td width="23%">
       <div align="center">
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2-1.x86_64.rpm">x86_64</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2-1.x86_64.rpm">x86_64</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2-1.armhfp.rpm">ARM v7</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2-1.armhfp.rpm">ARM v7</a>
         <span>|</span>
-        <a href="https://github.com/SpikeHD/dorion/releases/download/v6.12.2/Dorion_6.12.2-1.aarch64.rpm">ARM64</a>
+        <a href="https://github.com/SpikeHD/acord/releases/download/v6.12.2/Acord_6.12.2-1.aarch64.rpm">ARM64</a>
       </div>
     </td>
   </tr>
@@ -101,34 +101,34 @@
   <tr>
     <td width="23%">
       <div align="center">
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-x86_64-pc-windows-msvc-msi.zip">x86_64</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-x86_64-pc-windows-msvc-msi.zip">x86_64</a>
         <span>|</span>
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-aarch64-pc-windows-msvc-nsis.zip">ARM</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-aarch64-pc-windows-msvc-nsis.zip">ARM</a>
       </div>
     </td>
     <td width="23%">
       <div align="center">
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-x86_64-apple-darwin-dmg.zip">x86_64</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-x86_64-apple-darwin-dmg.zip">x86_64</a>
         <span>|</span>
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-aarch64-apple-darwin-dmg.zip">ARM</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-aarch64-apple-darwin-dmg.zip">ARM</a>
       </div>
     </td>
     <td width="23%">
       <div align="center">
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-x86_64-unknown-linux-gnu-deb.zip">x86_64</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-x86_64-unknown-linux-gnu-deb.zip">x86_64</a>
         <span>|</span>
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-armv7-unknown-linux-gnueabihf-deb.zip">ARM v7</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-armv7-unknown-linux-gnueabihf-deb.zip">ARM v7</a>
         <span>|</span>
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-aarch64-unknown-linux-gnu-deb.zip">ARM64</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-aarch64-unknown-linux-gnu-deb.zip">ARM64</a>
       </div>
     </td>
     <td width="23%">
       <div align="center">
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-x86_64-unknown-linux-gnu-rpm.zip">x86_64</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-x86_64-unknown-linux-gnu-rpm.zip">x86_64</a>
         <span>|</span>
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-armv7-unknown-linux-gnueabihf-rpm.zip">ARM v7</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-armv7-unknown-linux-gnueabihf-rpm.zip">ARM v7</a>
         <span>|</span>
-        <a href="https://nightly.link/SpikeHD/Dorion/workflows/build/main/dorion-aarch64-unknown-linux-gnu-rpm.zip">ARM64</a>
+        <a href="https://nightly.link/daniyusk/Acord/workflows/build/main/acord-aarch64-unknown-linux-gnu-rpm.zip">ARM64</a>
       </div>
     </td>
   </tr>
@@ -137,13 +137,13 @@
 </details>
 
 > [!TIP]
-> Dorion can also be used portably or installed via [several package managers](#package-repositories).
-> You can find portable builds in the [releases](https://github.com/SpikeHD/dorion/releases/latest/) page. You can also [build](#building) Dorion yourself!
+> Acord can also be used portably or installed via [several package managers](#package-repositories).
+> You can find portable builds in the [releases](https://github.com/SpikeHD/acord/releases/latest/) page. You can also [build](#building) Acord yourself!
 
 > [!NOTE]
-> ***MacOS Users***: If opening Dorion gives you "Dorion.app cannot be opened because it is from an unidentified developer", you may just need to run `sudo xattr -rd com.apple.quarantine /Applications/Dorion.app`. Alternatively, you can open the **Privacy & Security** settings pane and scroll down to the **Security** section to remove the quarantine.
+> ***MacOS Users***: If opening Acord gives you "Acord.app cannot be opened because it is from an unidentified developer", you may just need to run `sudo xattr -rd com.apple.quarantine /Applications/Acord.app`. Alternatively, you can open the **Privacy & Security** settings pane and scroll down to the **Security** section to remove the quarantine.
 >
-> ***Windows Users***: Defender may think Dorion is a virus. This just happens sometimes, and if SmartScreen blocks it from running, click "More Info" and "Run Anyways". Feel free to scan Dorion with [Virustotal](https://www.virustotal.com/gui/home/upload)!
+> ***Windows Users***: Defender may think Acord is a virus. This just happens sometimes, and if SmartScreen blocks it from running, click "More Info" and "Run Anyways". Feel free to scan Acord with [Virustotal](https://www.virustotal.com/gui/home/upload)!
 
 # Table of Contents
 
@@ -170,36 +170,36 @@
 
 # Package Repositories
 
-I do **not** maintain any instances of Dorion in any package repositories myself, however some very kind people maintain some in their own spare time:
+I do **not** maintain any instances of Acord in any package repositories myself, however some very kind people maintain some in their own spare time:
 
 * Windows:
   * Shovel/Scoop (Maintained by [Small-Ku](https://github.com/Small-Ku/)):
     ```sh
     scoop bucket add turbo 'https://github.com/Small-Ku/turbo-bucket.git'
-    scoop install turbo/dorion
+    scoop install turbo/acord
     ```
   * WinGet (Maintained by [headquarter8302](https://github.com/headquarter8302))
     ```sh
-    winget install --id SpikeHD.Dorion
+    winget install --id daniyusk.Acord
     ```
 * Linux:
   * Arch AUR (Maintained by [YouKnow-sys](https://github.com/YouKnow-sys))
     ```sh
-    yay -S dorion-bin
+    yay -S acord-bin
     ```
   * NixOS
     ```sh
-    nix-shell -p dorion
+    nix-shell -p acord
     ```
 * MacOS:
   * Homebrew (Maintained by [psharma04](https://github.com/psharma04))
     ```sh
-    brew tap psharma04/dorion
-    brew install --cask dorion
+    brew tap psharma04/acord
+    brew install --cask acord
     ```
 
 > [!NOTE]
-> Maintaining Dorion in a different package repository that I don't know about? Feel free to [open a PR](https://github.com/SpikeHD/Dorion/pulls) to add it here!
+> Maintaining Acord in a different package repository that I don't know about? Feel free to [open a PR](https://github.com/daniyusk/Acord/pulls) to add it here!
 
 # Features
 
@@ -215,11 +215,11 @@ I do **not** maintain any instances of Dorion in any package repositories myself
 
 ## Plugins
 
-Dorion comes with [shelter](https://github.com/uwu/shelter), so that should cover at least some plugin-related needs. You can also enable client mods like [Vencord](https://github.com/vendicated/vencord) inside the Dorion settings page.
-If you want to install plugins not available within the Dorion settings page, ensure you are downloading a browser-compatible version.
+Acord comes with [shelter](https://github.com/uwu/shelter), so that should cover at least some plugin-related needs. You can also enable client mods like [Vencord](https://github.com/vendicated/vencord) inside the Acord settings page.
+If you want to install plugins not available within the Acord settings page, ensure you are downloading a browser-compatible version.
 
 > [!NOTE]
-> Want official support for another client mod? As long as it works on the web, feel free to submit a [feature request](https://github.com/SpikeHD/Dorion/issues/new/choose)!
+> Want official support for another client mod? As long as it works on the web, feel free to submit a [feature request](https://github.com/daniyusk/Acord/issues/new/choose)!
 
 > [!TIP]
 > Unsure what shelter plugins exist out there? There's more than you think! Try searching `shelter plugins` on GitHub, or use the Plugin Browser plugin:
@@ -228,7 +228,7 @@ If you want to install plugins not available within the Dorion settings page, en
 
 ## Themes
 
-Dorion supports all themes, BetterDiscord and others, with a [couple caveats](#known-issues).
+Acord supports all themes, BetterDiscord and others, with a [couple caveats](#known-issues).
 
 [Jump to "Using Plugins and Themes"](#using-plugins-and-themes)
 
@@ -242,13 +242,13 @@ Dorion supports all themes, BetterDiscord and others, with a [couple caveats](#k
 | Voice                                          | ✓             | ~             | ✗[^3]            | ✓               |
 | Themes                                         | ✓             | ~             | ✓                | ✓               |
 | Shelter                                        | ✓             | ~             | ✓                | ✓               |
-| Dorion Plugins                                 | ✓             | ~             | ✓                | ✓               |
+| Acord Plugins                                 | ✓             | ~             | ✓                | ✓               |
 
 </div>
 
-[^1]: Windows 7 support is possible by installing API extensions, such as VxKex. It could break at any point, and if this happens, I probably won't put much effort into fixing it (PRs always welcome of course!). You may also need to manually install [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) if Dorion doesn't open after installing!
+[^1]: Windows 7 support is possible by installing API extensions, such as VxKex. It could break at any point, and if this happens, I probably won't put much effort into fixing it (PRs always welcome of course!). You may also need to manually install [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) if Acord doesn't open after installing!
 
-[^2]: Some people report Dorion freezing on Linux, particularly when GIFs are playing. This is, as far as I can tell, a bug in WebkitGTK.
+[^2]: Some people report Acord freezing on Linux, particularly when GIFs are playing. This is, as far as I can tell, a bug in WebkitGTK.
 
 [^3]: Support for WebRTC is hidden behind a build-time flag that is unused in most distros, and if it were, the implementation is still incomplete. This will be available when WebkitGTK ships with WebRTC support.
 
@@ -293,7 +293,7 @@ Dorion supports all themes, BetterDiscord and others, with a [couple caveats](#k
 7. Build!
 
     ```sh
-    # Build Dorion...
+    # Build Acord...
     pnpm tauri build
 
     # ...or to debug/open in dev mode
@@ -306,7 +306,7 @@ All built files will be in `src-tauri/target/(release|debug)/`. Installation fil
 
 * (non-Windows) External images (UserBG, Decor, UserPFP, etc.) will not load
 * (non-Windows) Fonts/font-faces will not load
-* Everything else in [the issues page](https://github.com/SpikeHD/Dorion/issues)
+* Everything else in [the issues page](https://github.com/daniyusk/Acord/issues)
 
 # Troubleshooting
 
@@ -316,13 +316,13 @@ If you submit an issue or ask a question in the Discord, it's likely you will be
 
 * Devtools console output (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> <kbd>i</kbd>, then click "Console")
 * `latest.log` output
-  * Windows: `%appdata%\dorion\logs`
-  * Linux: `~/.config/dorion/logs`
-  * MacOS: `~/Library/Application Support/dorion/logs`
+  * Windows: `%appdata%\acord\logs`
+  * Linux: `~/.config/acord/logs`
+  * MacOS: `~/Library/Application Support/acord/logs`
 
 ## General
 
-### I can't see Dorion Settings!
+### I can't see Acord Settings!
 * Check if `https://raw.githubusercontent.com/` URLs are being blocked by any system-wide adblockers/firewalls
 * Check the devtools console to see if there are any relevant errors
 
@@ -330,22 +330,22 @@ If you submit an issue or ask a question in the Discord, it's likely you will be
 (or a similar client crash)
 * Disable non-vital client mods/plugins/extensions and try again.
 * If you cannot get to the settings menu, you can delete the following items:
-  * Windows: `%appdata%\dorion\webdata` & `%appdata%\dorion\config.json`
-  * Linux: `~/.config/dorion/webdata` & `~/.config/dorion/config.json`
-  * MacOS: `~/Library/Application Support/dorion/webdata` & `~/Library/Application Support/dorion/config.json`
+  * Windows: `%appdata%\acord\webdata` & `%appdata%\acord\config.json`
+  * Linux: `~/.config/acord/webdata` & `~/.config/acord/config.json`
+  * MacOS: `~/Library/Application Support/acord/webdata` & `~/Library/Application Support/acord/config.json`
 
 ## Windows
-### Dorion not opening
+### Acord not opening
 * Try installing via MSI instead of the `.zip` file
 * Try using the `.zip` file instead of the MSI
-* (If using the `.zip` file) make sure all files were extracted properly. Ensure you are extracting Dorion and it's contents into it's own folder.
+* (If using the `.zip` file) make sure all files were extracted properly. Ensure you are extracting Acord and it's contents into it's own folder.
 * [Reinstall WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
   * Fully uninstall and reinstall.
   * If you are having trouble uninstalling it, or the installer says its already installed even though you uninstalled, try deleting this registry folder and uninstalling again `Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}`
 
 ## Linux
 ### White/blank/frozen screen
-* Run Dorion with either, or both, of the following environment variables:
+* Run Acord with either, or both, of the following environment variables:
   ```sh
   WEBKIT_DISABLE_COMPOSITING_MODE=1
   WEBKIT_DISABLE_DMABUF_RENDERER=1
@@ -356,7 +356,7 @@ If you submit an issue or ask a question in the Discord, it's likely you will be
 Plugins, extensions, and themes are relatively simple to use, the file structure looks like so on Windows:
 
 ```
-C:/Users/%USERNAME%/dorion/
+C:/Users/%USERNAME%/acord/
     ├── plugins/
     |   └── plugin.js
     ├── extensions/
@@ -368,21 +368,21 @@ C:/Users/%USERNAME%/dorion/
 and like so on Linux:
 
 ```
-~/.config/dorion/
+~/.config/acord/
     ├── plugins/
     |   └── plugin.js
     └── themes/
         └── theme.css
 ```
 
-so if you download a plugin, extension, or theme, just pop it into the `plugins`/`extensions`/`themes` folder. If you need help finding them, there are buttons in Dorion settings that'll take you where you need!
+so if you download a plugin, extension, or theme, just pop it into the `plugins`/`extensions`/`themes` folder. If you need help finding them, there are buttons in Acord settings that'll take you where you need!
 
 > [!NOTE]
 > Themes can also be installed by clicking `Install Theme from Link` in Theme settings, if you prefer
 
 # Contributing
 
-Issues, PRs, etc. are all welcome! For guidelines and tips, see [CONTRIBUTING.md](https://github.com/SpikeHD/Dorion/blob/main/CONTRIBUTING.md)
+Issues, PRs, etc. are all welcome! For guidelines and tips, see [CONTRIBUTING.md](https://github.com/daniyusk/Acord/blob/main/CONTRIBUTING.md)
 
 ## Translating
 
@@ -390,8 +390,8 @@ See [TRANSLATING.md](./TRANSLATING.md)
 
 ## Contributors
 
-<a href="https://github.com/spikehd/dorion/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=spikehd/dorion" />
+<a href="https://github.com/daniyusk/acord/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=daniyusk/acord" />
 </a>
 
 # Screenshots

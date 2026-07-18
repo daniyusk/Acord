@@ -140,7 +140,7 @@ fn main() {
     .unwrap_or_else(|e| log!("Failed to set application: {:?}", e));
 
   log!(
-    "Starting Dorion version v{}",
+    "Starting Acord version v{}",
     context
       .config()
       .version
@@ -304,7 +304,7 @@ fn main() {
 
       let config = get_config();
       let preinject = PREINJECT.clone();
-      let title = format!("Dorion - v{}", app.package_info().version);
+      let title = format!("Acord - v{}", app.package_info().version);
       let mut win = WebviewWindowBuilder::new(app, "main", url_ext)
         .title(title.as_str())
         .resizable(true)
@@ -323,7 +323,7 @@ fn main() {
 
       if !args::is_safemode() {
         // Preinject is bundled with "use strict" so we put it in it's own function to prevent potential client mod issues
-        win = win.initialization_script(format!("console.log(window.location);if(window.__DORION_INIT__) {{throw new Error('Dorion already began initializing');}} window.__DORION_INIT__ = true; {preinject};{client_mods}").as_str());
+        win = win.initialization_script(format!("console.log(window.location);if(window.__DORION_INIT__) {{throw new Error('Acord already began initializing');}} window.__DORION_INIT__ = true; {preinject};{client_mods}").as_str());
       }
 
       #[cfg(target_os = "windows")]
@@ -360,7 +360,7 @@ fn main() {
             win = win.proxy_url(url);
           } else {
             log!("Invalid proxy URL: {proxy}");
-            // We should exit, people using proxies probably don't want to use Dorion without it
+            // We should exit, people using proxies probably don't want to use Acord without it
             std::process::exit(1);
           }
         }

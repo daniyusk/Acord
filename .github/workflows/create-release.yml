@@ -34,56 +34,56 @@ jobs:
             
             # Determine the new filename based on the artifact name
             case "$base_name" in
-              "dorion-aarch64-apple-darwin-dmg")
-                new_name="Dorion_${{ inputs.version }}_aarch64.dmg"
+              "acord-aarch64-apple-darwin-dmg")
+                new_name="Acord_${{ inputs.version }}_aarch64.dmg"
                 ;;
-              "dorion-aarch64-pc-windows-msvc-nsis")
-                new_name="Dorion_${{ inputs.version }}.arm64-setup.exe"
+              "acord-aarch64-pc-windows-msvc-nsis")
+                new_name="Acord_${{ inputs.version }}.arm64-setup.exe"
                 ;;
-              "dorion-aarch64-pc-windows-msvc-portable")
-                new_name="Dorion_${{ inputs.version }}_win_arm64_portable.zip"
+              "acord-aarch64-pc-windows-msvc-portable")
+                new_name="Acord_${{ inputs.version }}_win_arm64_portable.zip"
                 ;;
-              "dorion-aarch64-unknown-linux-gnu-deb")
-                new_name="Dorion_${{ inputs.version }}_arm64.deb"
+              "acord-aarch64-unknown-linux-gnu-deb")
+                new_name="Acord_${{ inputs.version }}_arm64.deb"
                 ;;
-              "dorion-aarch64-unknown-linux-gnu-portable")
-                new_name="Dorion_${{ inputs.version }}_arm64_portable.tar.gz"
+              "acord-aarch64-unknown-linux-gnu-portable")
+                new_name="Acord_${{ inputs.version }}_arm64_portable.tar.gz"
                 ;;
-              "dorion-aarch64-unknown-linux-gnu-rpm")
-                new_name="Dorion_${{ inputs.version }}-1.aarch64.rpm"
+              "acord-aarch64-unknown-linux-gnu-rpm")
+                new_name="Acord_${{ inputs.version }}-1.aarch64.rpm"
                 ;;
-              "dorion-armv7-unknown-linux-gnueabihf-deb")
-                new_name="Dorion_${{ inputs.version }}_armhf.deb"
+              "acord-armv7-unknown-linux-gnueabihf-deb")
+                new_name="Acord_${{ inputs.version }}_armhf.deb"
                 ;;
-              "dorion-armv7-unknown-linux-gnueabihf-portable")
-                new_name="Dorion_${{ inputs.version }}_armv7_portable.tar.gz"
+              "acord-armv7-unknown-linux-gnueabihf-portable")
+                new_name="Acord_${{ inputs.version }}_armv7_portable.tar.gz"
                 ;;
-              "dorion-armv7-unknown-linux-gnueabihf-rpm")
-                new_name="Dorion_${{ inputs.version }}-1.armhfp.rpm"
+              "acord-armv7-unknown-linux-gnueabihf-rpm")
+                new_name="Acord_${{ inputs.version }}-1.armhfp.rpm"
                 ;;
-              "dorion-x86_64-apple-darwin-dmg")
-                new_name="Dorion_${{ inputs.version }}_x64.dmg"
+              "acord-x86_64-apple-darwin-dmg")
+                new_name="Acord_${{ inputs.version }}_x64.dmg"
                 ;;
-              "dorion-x86_64-pc-windows-msvc-nsis")
-                new_name="Dorion_${{ inputs.version }}_x64-setup.exe"
+              "acord-x86_64-pc-windows-msvc-nsis")
+                new_name="Acord_${{ inputs.version }}_x64-setup.exe"
                 ;;
-              "dorion-x86_64-pc-windows-msvc-msi")
-                new_name="Dorion_${{ inputs.version }}_x64_en-US.msi"
+              "acord-x86_64-pc-windows-msvc-msi")
+                new_name="Acord_${{ inputs.version }}_x64_en-US.msi"
                 ;;
-              "dorion-x86_64-pc-windows-msvc-portable")
-                new_name="Dorion_${{ inputs.version }}_win64_portable.zip"
+              "acord-x86_64-pc-windows-msvc-portable")
+                new_name="Acord_${{ inputs.version }}_win64_portable.zip"
                 ;;
-              "dorion-x86_64-unknown-linux-gnu-appimage")
-                new_name="Dorion_${{ inputs.version }}_amd64.AppImage"
+              "acord-x86_64-unknown-linux-gnu-appimage")
+                new_name="Acord_${{ inputs.version }}_amd64.AppImage"
                 ;;
-              "dorion-x86_64-unknown-linux-gnu-deb")
-                new_name="Dorion_${{ inputs.version }}_amd64.deb"
+              "acord-x86_64-unknown-linux-gnu-deb")
+                new_name="Acord_${{ inputs.version }}_amd64.deb"
                 ;;
-              "dorion-x86_64-unknown-linux-gnu-portable")
-                new_name="Dorion_${{ inputs.version }}_amd64_portable.tar.gz"
+              "acord-x86_64-unknown-linux-gnu-portable")
+                new_name="Acord_${{ inputs.version }}_amd64_portable.tar.gz"
                 ;;
-              "dorion-x86_64-unknown-linux-gnu-rpm")
-                new_name="Dorion_${{ inputs.version }}-1.x86_64.rpm"
+              "acord-x86_64-unknown-linux-gnu-rpm")
+                new_name="Acord_${{ inputs.version }}-1.x86_64.rpm"
                 ;;
               *)
                 # Skip unknown artifacts

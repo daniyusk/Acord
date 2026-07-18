@@ -69,7 +69,7 @@ window.Dorion = {
   const INJECTED_PLUGIN_OPTIONS = {
     isVisible: true,
     allowedActions: { toggle: debug },
-    loaderName: 'Dorion'
+    loaderName: 'Acord'
   }
 
   window.SHELTER_INJECTOR_PLUGINS = {
@@ -79,17 +79,17 @@ window.Dorion = {
         toggle: true,
       }
     }],
-    'Dorion Titlebar': ['https://spikehd.dev/shelter-plugins/dorion-titlebar/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Settings': ['https://spikehd.dev/shelter-plugins/dorion-settings/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Titlebar': ['https://spikehd.dev/shelter-plugins/dorion-titlebar/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Settings': ['https://spikehd.dev/shelter-plugins/dorion-settings/', INJECTED_PLUGIN_OPTIONS],
     'Always Trust': ['https://spikehd.dev/shelter-plugins/always-trust/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Notifications': ['https://spikehd.dev/shelter-plugins/dorion-notifications/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Streamer Mode': ['https://spikehd.dev/shelter-plugins/dorion-streamer-mode/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Updater': ['https://spikehd.dev/shelter-plugins/dorion-updater/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion PTT': ['https://spikehd.dev/shelter-plugins/dorion-ptt/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Tray': ['https://spikehd.dev/shelter-plugins/dorion-tray/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Fullscreen': ['https://spikehd.dev/shelter-plugins/dorion-fullscreen/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Custom Keybinds': ['https://spikehd.dev/shelter-plugins/dorion-custom-keybinds/', INJECTED_PLUGIN_OPTIONS],
-    'Dorion Helpers': ['https://spikehd.dev/shelter-plugins/dorion-helpers/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Notifications': ['https://spikehd.dev/shelter-plugins/dorion-notifications/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Streamer Mode': ['https://spikehd.dev/shelter-plugins/dorion-streamer-mode/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Updater': ['https://spikehd.dev/shelter-plugins/dorion-updater/', INJECTED_PLUGIN_OPTIONS],
+    'Acord PTT': ['https://spikehd.dev/shelter-plugins/dorion-ptt/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Tray': ['https://spikehd.dev/shelter-plugins/dorion-tray/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Fullscreen': ['https://spikehd.dev/shelter-plugins/dorion-fullscreen/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Custom Keybinds': ['https://spikehd.dev/shelter-plugins/dorion-custom-keybinds/', INJECTED_PLUGIN_OPTIONS],
+    'Acord Helpers': ['https://spikehd.dev/shelter-plugins/dorion-helpers/', INJECTED_PLUGIN_OPTIONS],
     'Web Keybinds': ['https://spikehd.dev/shelter-plugins/web-keybinds/', {
       ...INJECTED_PLUGIN_OPTIONS,
       allowedActions: {
@@ -133,7 +133,7 @@ async function init() {
   )
 
   updateOverlay({
-    subtitle: `Made with ❤️ by SpikeHD - v${version}`,
+    subtitle: `Acord - v${version}`,
     midtitle: 'Localizing JS imports...'
   })
 
@@ -245,10 +245,10 @@ async function handleThemeInjection() {
     const ts = document.querySelector('#dorion-theme')
     ts.textContent = \`
       ${cleanContents?.replace(/`/g, '\\`')
-      // To this day I do not know why I need to do this
-      .replace(/\\8/g, '')
-      .replace(/\\9/g, '')
-    }
+  // To this day I do not know why I need to do this
+    .replace(/\\8/g, '')
+    .replace(/\\9/g, '')
+}
     \`
 
     console.log('[Theme Loader] Appending Styles')
@@ -276,10 +276,10 @@ async function handleClientModThemeInjection() {
     const ts = document.querySelector('#dorion-client-mods-themes')
     ts.textContent = \`
       ${cleanContents?.replace(/`/g, '\\`')
-      // To this day I do not know why I need to do this
-      .replace(/\\8/g, '')
-      .replace(/\\9/g, '')
-    }
+  // To this day I do not know why I need to do this
+    .replace(/\\8/g, '')
+    .replace(/\\9/g, '')
+}
     \`
 
     console.log('[Theme Loader] Appending Client Mod Styles')

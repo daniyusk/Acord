@@ -1,4 +1,4 @@
-project(dorion_csp_killer)
+project(acord_csp_killer)
 cmake_minimum_required(VERSION 3.25)
 
 include(FindPkgConfig)
