@@ -9,7 +9,6 @@ declare global {
     SHELTER_INJECTOR_PLUGINS: Record<string, [string, Record<string, unknown>]> 
     __TAURI__: TauriGlobal & {
       shell: TauriShell
-      http: any
     }
 
     nativeFetch: typeof fetch
