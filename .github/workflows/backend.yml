@@ -41,6 +41,7 @@ jobs:
         with:
           toolchain: 1.88
           components: rustfmt
+          cache: false
 
       - name: Rustfmt check
         run: cargo fmt --manifest-path ./src-tauri/Cargo.toml --all -- --check
@@ -63,6 +64,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1.8
         with:
           components: clippy
+          cache: false
       - uses: pnpm/action-setup@v3
         with:
           version: latest

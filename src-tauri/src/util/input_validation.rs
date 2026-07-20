@@ -96,6 +96,7 @@ pub fn validate_payload_size(value: &str, max_bytes: usize, label: &str) -> Resu
   Ok(())
 }
 
+#[cfg_attr(target_os = "macos", allow(dead_code))]
 pub fn is_discord_snowflake(value: &str) -> bool {
   !value.is_empty()
     && value.len() <= 20

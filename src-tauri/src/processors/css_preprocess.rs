@@ -124,7 +124,7 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
     tasks.push(std::thread::spawn(move || {
       log!("Getting: {}", &url);
 
-      let mut response = match client.get(request_url).send() {
+      let response = match client.get(request_url).send() {
         Ok(r) => r,
         Err(e) => {
           log!("Request failed: {}", e);
@@ -398,7 +398,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
       let b64 = general_purpose::STANDARD.encode(&bytes);
 
       win_clone
-        .emit("loading_log", format!("Processed image import: {}", &url))
+        .emit("loading_log", format!("Processed image import: {}", url))
         .unwrap_or_default();
 
       if url.is_empty() {

@@ -143,6 +143,7 @@ fn collect_linux_screen_share_diagnostics() -> LinuxScreenShareDiagnostics {
       .ok()
       .into_iter()
       .flatten()
+      .filter_map(Result::ok)
       .any(|entry| {
         entry
           .path()

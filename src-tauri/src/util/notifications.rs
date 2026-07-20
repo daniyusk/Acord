@@ -16,6 +16,7 @@ use tauri::Manager;
 #[cfg(target_os = "windows")]
 use super::helpers::is_windows_7;
 
+#[cfg_attr(target_os = "macos", allow(dead_code))]
 #[derive(serde::Deserialize, Debug, Clone)]
 pub struct AdditionalData {
   guild_id: Option<String>,
@@ -147,11 +148,15 @@ fn send_notification_internal_other(
   title: String,
   body: String,
   _icon: String,
-  additional_data: Option<AdditionalData>,
+  _additional_data: Option<AdditionalData>,
 ) {
   use notify_rust::{Notification, Timeout};
 
+  #[cfg(target_os = "linux")]
   let win = app.get_webview_window("main");
+
+  #[cfg(not(target_os = "linux"))]
+  let _ = app;
 
   match Notification::new()
     .summary(&title)
@@ -161,19 +166,22 @@ fn send_notification_internal_other(
     .action("default", "default")
     .show()
   {
+    #[cfg(target_os = "linux")]
     Ok(n) => {
       #[cfg(target_os = "linux")]
       std::thread::spawn(move || {
         n.wait_for_action(|action| match action {
           "default" => {
             if let Some(win) = &win {
-              open_notification_data(win, additional_data);
+              open_notification_data(win, _additional_data);
             }
           }
           _ => {}
         })
       });
     }
+    #[cfg(not(target_os = "linux"))]
+    Ok(_) => {}
     Err(e) => log!("Failed to send notification: {:?}", e),
   };
 }
@@ -334,6 +342,7 @@ fn notification_count_inner(_window: &tauri::WebviewWindow, amount: i64) {
   }
 }
 
+#[cfg_attr(target_os = "macos", allow(dead_code))]
 pub fn open_notification_data(win: &tauri::WebviewWindow, additional_data: Option<AdditionalData>) {
   ultrashow(win.clone());
 
