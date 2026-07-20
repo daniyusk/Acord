@@ -23,6 +23,7 @@ function readTypeScriptTree(relativeDirectory) {
 }
 
 const capability = JSON.parse(read('src-tauri/capabilities/default.json'))
+const localCapability = JSON.parse(read('src-tauri/capabilities/local-injected-main.json'))
 const tauriConfig = JSON.parse(read('src-tauri/tauri.conf.json'))
 const packageJson = JSON.parse(read('package.json'))
 const injectionSource = readTypeScriptTree('src-tauri/injection')
@@ -42,6 +43,13 @@ test('limits the remote capability to supported Discord origins and the main win
     'https://ptb.discord.com/*'
   ])
   assert.ok(capability.remote.urls.every(url => !url.includes('*.discord.com')))
+})
+
+test('isolates local injected IPC permissions from remote content', () => {
+  assert.equal(localCapability.local, true)
+  assert.equal(localCapability.remote, undefined)
+  assert.deepEqual(localCapability.windows, ['main'])
+  assert.deepEqual(localCapability.permissions, capability.permissions)
 })
 
 test('keeps privileged plugins outside the remote capability', () => {

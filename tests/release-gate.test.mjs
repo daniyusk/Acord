@@ -16,6 +16,8 @@ test('the build workflow runs release checks before packaging artifacts', async 
 
   assert.match(packageJson.scripts['test:release'], /pnpm test:rust/)
   assert.equal(packageJson.scripts['test:runtime'], 'node scripts/smoke-test-binary.mjs')
+  assert.ok(workflow.indexOf('pnpm build:js') < workflow.indexOf('Run release test suite'))
+  assert.match(workflow, /libsoup-3\.0-dev/)
   assert.ok(workflow.indexOf('Run release test suite') < workflow.indexOf('- name: Build'))
   assert.match(workflow, /pnpm test:runtime -- "src-tauri\/target\/\$\{\{ matrix\.config\.target \}\}\/release\/Acord\.exe"/)
   assert.match(workflow, /pnpm test:runtime -- "src-tauri\/target\/\$\{\{ matrix\.config\.target \}\}\/release\/Acord"/)

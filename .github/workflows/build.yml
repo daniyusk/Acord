@@ -118,6 +118,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev \
+            libsoup-3.0-dev \
             build-essential \
             curl \
             wget \
@@ -187,8 +188,8 @@ jobs:
           CXX: aarch64-linux-gnu-g++
           PKG_CONFIG_PATH: /usr/lib/aarch64-linux-gnu/pkgconfig
 
-      - name: Install dependencies
-        run: pnpm install && pnpm shupdate
+      - name: Install dependencies and build generated frontend assets
+        run: pnpm install && pnpm shupdate && pnpm build:js
 
       - name: Run release test suite
         run: pnpm test:release

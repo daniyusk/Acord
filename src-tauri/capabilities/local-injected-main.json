@@ -1,0 +1,40 @@
+{
+  "identifier": "local-injected-main",
+  "description": "Permissions required by Acord's trusted initialization script in the main window",
+  "local": true,
+  "platforms": [
+    "macOS",
+    "windows",
+    "linux"
+  ],
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "opener:allow-open-url",
+    "opener:allow-default-urls",
+    "allow-app-version",
+    "allow-default-config",
+    "allow-fetch-image",
+    "allow-frontend-ready",
+    "allow-get-enabled-themes",
+    "allow-get-extra-css",
+    "allow-get-index",
+    "allow-get-injection-js",
+    "allow-get-os-accent",
+    "allow-get-platform",
+    "allow-get-themes",
+    "allow-load-mods-css",
+    "allow-load-plugins",
+    "allow-localize-imports",
+    "allow-open-themes",
+    "allow-read-config-file",
+    "allow-record-rtc-diagnostics",
+    "allow-restart-in-safemode",
+    "allow-set-decorations",
+    "allow-trigger-keys-pressed",
+    "allow-write-config-file"
+  ]
+}

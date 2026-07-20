@@ -61,7 +61,7 @@
     "withGlobalTauri": false,
     "security": {
       "csp": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; media-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost; worker-src 'self' blob:",
-      "freezePrototype": true
+      "freezePrototype": false
     }
   }
 }
