@@ -14,6 +14,8 @@
     "test:runtime": "node scripts/smoke-test-binary.mjs",
     "test:release-gate": "node --test tests/release-gate.test.mjs",
     "test:release": "pnpm typecheck:injection && pnpm lint && pnpm test:security && pnpm test:release-gate && pnpm test:rust",
+    "prepare:generated-assets": "pnpm shupdate && pnpm build:js",
+    "verify": "pnpm prepare:generated-assets && pnpm test:release",
     "tauri": "tauri",
     "check:tauri-cli": "node scripts/check-tauri-cli-version.mjs",
     "format": "cargo fmt --manifest-path ./src-tauri/Cargo.toml --all && prettier src -w",
