@@ -220,7 +220,10 @@ pub fn validate_profile_name(name: &str) -> Result<(), String> {
 
   if name.chars().any(|character| {
     character.is_control()
-      || matches!(character, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|')
+      || matches!(
+        character,
+        '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|'
+      )
   }) {
     return Err("Profile name contains an invalid path character".to_string());
   }
@@ -328,7 +331,10 @@ mod tests {
   #[test]
   fn allows_single_directory_profile_names() {
     for name in ["default", "Profile 1", "Jos\u{00e9}", ".private"] {
-      assert!(validate_profile_name(name).is_ok(), "{name} should be valid");
+      assert!(
+        validate_profile_name(name).is_ok(),
+        "{name} should be valid"
+      );
     }
   }
 
@@ -348,7 +354,10 @@ mod tests {
       "profile\0name",
       oversized.as_str(),
     ] {
-      assert!(validate_profile_name(name).is_err(), "{name:?} should be rejected");
+      assert!(
+        validate_profile_name(name).is_err(),
+        "{name:?} should be rejected"
+      );
     }
   }
 

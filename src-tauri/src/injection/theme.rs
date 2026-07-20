@@ -94,7 +94,10 @@ pub fn theme_from_link(link: String, filename: Option<String>) -> Result<String,
     .map_err(|error| format!("Failed to fetch theme: {error}"))?;
 
   if !response.status().is_success() {
-    return Err(format!("Theme request failed with status {}", response.status()));
+    return Err(format!(
+      "Theme request failed with status {}",
+      response.status()
+    ));
   }
 
   if response

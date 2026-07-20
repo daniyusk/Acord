@@ -1,5 +1,7 @@
 use crate::log;
-use crate::util::input_validation::{validate_http_url, validate_payload_size, MAX_JAVASCRIPT_BYTES};
+use crate::util::input_validation::{
+  validate_http_url, validate_payload_size, MAX_JAVASCRIPT_BYTES,
+};
 
 const MAX_IMPORT_URLS: usize = 32;
 

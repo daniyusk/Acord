@@ -69,11 +69,7 @@ pub async fn maybe_latest_main_release(
 ) -> Result<bool, Box<dyn std::error::Error + Sync + Send>> {
   let url = "https://api.github.com/repos/daniyusk/Acord/releases/latest";
   let client = reqwest::Client::new();
-  let response = client
-    .get(url)
-    .header("User-Agent", "Acord")
-    .send()
-    .await?;
+  let response = client.get(url).header("User-Agent", "Acord").send().await?;
   let text = response.text().await?;
 
   // Parse "tag_name" from JSON

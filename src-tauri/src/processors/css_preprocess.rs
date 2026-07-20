@@ -323,7 +323,13 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
         continue;
       }
     };
-    let filetype = url.split('?').next().unwrap_or(url).split('.').next_back().unwrap_or("png");
+    let filetype = url
+      .split('?')
+      .next()
+      .unwrap_or(url)
+      .split('.')
+      .next_back()
+      .unwrap_or("png");
 
     // SVGs require the filetype to be svg+xml because they're special I guess
     let filetype = if filetype == "svg" {

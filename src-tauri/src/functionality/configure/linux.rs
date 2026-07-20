@@ -6,12 +6,11 @@ use webkit2gtk::{
   PermissionRequestExt, SecurityManagerExt, SettingsExt, WebContextExt, WebView, WebViewExt,
 };
 
+use crate::log;
 use crate::{
-  config::get_config,
-  functionality::linux_screen_share::log_linux_screen_share_diagnostics,
+  config::get_config, functionality::linux_screen_share::log_linux_screen_share_diagnostics,
   gpu::disable_hardware_accel_linux,
 };
-use crate::log;
 
 pub fn configure(window: &tauri::WebviewWindow) {
   let handle = window.app_handle().clone();

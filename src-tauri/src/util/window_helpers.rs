@@ -91,13 +91,15 @@ pub fn clear_cache() {
 pub fn window_zoom_level(win: tauri::WebviewWindow, value: Option<f64>) {
   win
     .with_webview(move |webview| unsafe {
-      let zoom = sanitize_zoom_level(value.unwrap_or(
-        get_config()
-          .zoom
-          .unwrap_or("1.0".to_string())
-          .parse::<f64>()
-          .unwrap_or(1.0),
-      ));
+      let zoom = sanitize_zoom_level(
+        value.unwrap_or(
+          get_config()
+            .zoom
+            .unwrap_or("1.0".to_string())
+            .parse::<f64>()
+            .unwrap_or(1.0),
+        ),
+      );
 
       webview.controller().SetZoomFactor(zoom).unwrap_or_default();
     })
@@ -107,13 +109,15 @@ pub fn window_zoom_level(win: tauri::WebviewWindow, value: Option<f64>) {
 #[cfg(not(target_os = "windows"))]
 #[tauri::command]
 pub fn window_zoom_level(win: tauri::WebviewWindow, value: Option<f64>) {
-  let zoom = sanitize_zoom_level(value.unwrap_or(
-    get_config()
-      .zoom
-      .unwrap_or("1.0".to_string())
-      .parse::<f64>()
-      .unwrap_or(1.0),
-  ));
+  let zoom = sanitize_zoom_level(
+    value.unwrap_or(
+      get_config()
+        .zoom
+        .unwrap_or("1.0".to_string())
+        .parse::<f64>()
+        .unwrap_or(1.0),
+    ),
+  );
 
   win
     .eval(format!("document.body.style.zoom = '{zoom}'"))

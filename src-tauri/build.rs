@@ -1,7 +1,6 @@
 fn main() {
-  tauri_build::try_build(
-    tauri_build::Attributes::new()
-      .app_manifest(tauri_build::AppManifest::new().commands(&[
+  tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
+    tauri_build::AppManifest::new().commands(&[
         // Keep this list in sync with the commands registered in `main.rs`.
         // Commands omitted here cannot be invoked by a webview.
         "should_disable_plugins",
@@ -70,7 +69,7 @@ fn main() {
         "ultrashow",
         "window_zoom_level",
         "get_os_accent",
-      ])),
-  )
+    ]),
+  ))
   .expect("failed to build the Tauri application manifest");
 }
