@@ -7,7 +7,7 @@ const repositoryRoot = new URL('../', import.meta.url)
 const readRepositoryFile = (path) =>
   readFile(new URL(path, repositoryRoot), 'utf8')
 
-test('keeps a restrictive CSP for Acord-owned content', async () => {
+test('keeps a restrictive CSP compatible with Discord content', async () => {
   const config = JSON.parse(await readRepositoryFile('src-tauri/tauri.conf.json'))
   const csp = config.app.security.csp
 
@@ -17,7 +17,7 @@ test('keeps a restrictive CSP for Acord-owned content', async () => {
   assert.match(csp, /base-uri 'none'/)
   assert.match(csp, /frame-ancestors 'none'/)
   assert.doesNotMatch(csp, /unsafe-eval/)
-  assert.equal(config.app.security.freezePrototype, true)
+  assert.equal(config.app.security.freezePrototype, false)
 })
 
 test('does not remove Discord CSP and keeps third-party code opt-in', async () => {
