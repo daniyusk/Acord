@@ -15,6 +15,7 @@ Acord as a whole is only two components, the main stuff (this repo), and [shelte
 Jump to:
 * [Set up Acord to think the debug version is portable](#set-up-Acord-to-think-the-debug-version-is-portable)
 * [Testing changes in Acord](#testing-changes-in-acord)
+* [Building with limited memory](#building-with-limited-memory)
 * [Testing changes in the updater](#testing-changes-in-the-updater)
 * [Testing changes in Shelter Plugins](#testing-changes-in-shelter-plugins)
 
@@ -34,6 +35,15 @@ To do this, run `./setup_portable_debug.sh` or `./setup_portable_debug.cmd` on W
    ```
 
 That's it! You'll see all sorts of logs spit out, and you can test your changes.
+
+### Building with limited memory
+
+Release builds use link-time optimization and can require substantial memory. If the build fails because the system cannot allocate memory, enable a system-managed page file and reduce Cargo parallelism for that build:
+
+```powershell
+$env:CARGO_BUILD_JOBS = 1
+pnpm tauri build
+```
 
 ### Testing changes in the updater
 

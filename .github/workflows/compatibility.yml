@@ -1,0 +1,75 @@
+name: Scheduled compatibility
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Check the next Rust release weekly without making PRs depend on it.
+    - cron: '0 5 * * 1'
+
+concurrency:
+  group: scheduled-compatibility-${{ github.workflow }}
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  compatibility:
+    name: ${{ matrix.platform }} / Rust stable
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions-rust-lang/setup-rust-toolchain@v1.12
+        with:
+          toolchain: stable
+          components: clippy
+          cache: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.0.0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            wget \
+            libwebkit2gtk-4.1-dev \
+            libsoup-3.0-dev \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare generated assets
+        run: pnpm prepare:generated-assets
+
+      - name: Create build-time test placeholders
+        shell: bash
+        run: |
+          touch src-tauri/updater
+          touch src-tauri/extension_webkit/libextension.so
+
+      - name: Verify compatibility
+        run: pnpm test:release
+
+      - name: Run Clippy
+        run: pnpm clippy
+
+      - name: Run updater Clippy
+        if: matrix.platform != 'ubuntu-latest'
+        run: pnpm clippy:updater
