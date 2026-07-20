@@ -42,8 +42,8 @@ use crate::{
 mod args;
 mod config;
 mod functionality;
-mod gpu;
 mod injection;
+mod platform;
 mod processors;
 mod profiles;
 mod release;
@@ -53,22 +53,6 @@ mod window;
 const HASH: Option<&'static str> = std::option_env!("GIT_HASH");
 #[cfg(target_os = "windows")]
 static POPOUT_COUNTER: AtomicU64 = AtomicU64::new(0);
-
-#[cfg(target_os = "windows")]
-pub fn additional_args() {
-  // We set some of these internally, so make sure they stick around if we are about to add more
-  let browser_args = std::env::var("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS").unwrap_or_default();
-  let new_args = args::get_webview_args();
-
-  unsafe {
-    std::env::set_var(
-      "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
-      format!("{browser_args} {new_args}"),
-    );
-  };
-
-  log!("Running with the following WebView2 arguments: {browser_args} {new_args}");
-}
 
 #[tauri::command]
 fn git_hash() -> String {
@@ -128,14 +112,7 @@ fn main() {
   // Run the steps to init profiles
   init_profiles_folders();
 
-  // maybe disable hardware acceleration for windows
-  if config.disable_hardware_accel.unwrap_or(false) {
-    #[cfg(target_os = "windows")]
-    gpu::disable_hardware_accel_windows();
-  }
-
-  #[cfg(target_os = "linux")]
-  gpu::disable_dma();
+  platform::webview::configure_before_creation(config.disable_hardware_accel.unwrap_or(false));
 
   log!("Are we portable? {}", is_portable());
 
@@ -159,9 +136,6 @@ fn main() {
   let parsed = reqwest::Url::parse(&url).unwrap();
   let url_ext = tauri::WebviewUrl::External(parsed);
   let client_mods = load_mods_js();
-
-  #[cfg(target_os = "windows")]
-  additional_args();
 
   #[allow(clippy::single_match)]
   #[allow(unused_mut)]
