@@ -38,6 +38,19 @@ test('the build workflow uses the pinned Rust toolchain and declares its support
   assert.doesNotMatch(workflow, /toolchain:/)
 })
 
+test('continuous Rust compatibility checks stay outside the PR release gate', async () => {
+  const workflow = await readProjectFile('.github/workflows/compatibility.yml')
+
+  assert.match(workflow, /^\s*schedule:/m)
+  assert.match(workflow, /toolchain: stable/)
+  assert.match(workflow, /platform: \[windows-latest, ubuntu-latest, macos-latest\]/)
+  assert.match(workflow, /pnpm test:release/)
+  assert.match(workflow, /pnpm clippy/)
+  assert.match(workflow, /libsoup-3\.0-dev/)
+  assert.doesNotMatch(workflow, /^\s*push:/m)
+  assert.doesNotMatch(workflow, /^\s*pull_request:/m)
+})
+
 test('a draft release only consumes a successful build for its checked-out commit', async () => {
   const workflow = await readProjectFile('.github/workflows/create-release.yml')
 
