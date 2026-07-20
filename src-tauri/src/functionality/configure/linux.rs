@@ -9,7 +9,6 @@ use webkit2gtk::{
 use crate::log;
 use crate::{
   config::get_config, functionality::linux_screen_share::log_linux_screen_share_diagnostics,
-  gpu::disable_hardware_accel_linux,
 };
 
 pub fn configure(window: &tauri::WebviewWindow) {
@@ -18,7 +17,6 @@ pub fn configure(window: &tauri::WebviewWindow) {
   log!(
     "Linux voice, video, and screen sharing use WebKitGTK and are experimental; enable rtc_diagnostics for local troubleshooting data"
   );
-  disable_hardware_accel_linux(window);
   enable_webrtc(window);
 
   if get_config().rtc_diagnostics.unwrap_or(false) {

@@ -105,16 +105,9 @@ pub fn send_notification(
     return;
   }
 
-  #[cfg(target_os = "windows")]
-  let mut icon_path = String::new();
+  let icon_path = crate::platform::notifications::icon_path(&tmp_file);
 
-  // Create file:// uri
-  #[cfg(not(target_os = "windows"))]
-  let mut icon_path = String::from("file://");
-
-  icon_path.push_str(&tmp_file.to_str().unwrap_or_default().replace('\\', "/"));
-
-  send_notification_internal(app, title, body, icon_path.clone(), additional_data);
+  send_notification_internal(app, title, body, icon_path, additional_data);
 }
 
 fn send_notification_internal(
@@ -251,90 +244,12 @@ fn send_notification_internal_windows7(
 pub fn notification_count(window: tauri::WebviewWindow, amount: i64) {
   log!("Setting notification count: {}", amount);
 
-  notification_count_inner(&window, amount);
+  crate::platform::notifications::set_badge(&window, amount);
 
   // If the tray state is unread or default,
   if TrayIcon::from_usize(TRAY_STATE.load(Ordering::Relaxed)).is_overwrite() {
     let state = if amount == 0 { "default" } else { "unread" };
     set_tray_icon(window.app_handle().to_owned(), state.to_string());
-  }
-}
-
-#[cfg(target_os = "linux")]
-fn notification_count_inner(window: &tauri::WebviewWindow, amount: i64) {
-  window
-    .set_badge_count(if amount <= 0 { None } else { Some(amount) })
-    .unwrap_or_default();
-}
-
-#[cfg(target_os = "windows")]
-fn notification_count_inner(window: &tauri::WebviewWindow, amount: i64) {
-  if amount == 0 {
-    window.set_overlay_icon(None).unwrap_or_default();
-  } else {
-    use include_flate::flate;
-    use tauri::image::Image;
-
-    // Include icons
-    flate!(static ICO_SOME: [u8] from "./icons/notifications/some.png");
-    flate!(static ICO_1: [u8] from "./icons/notifications/1.png");
-    flate!(static ICO_2: [u8] from "./icons/notifications/2.png");
-    flate!(static ICO_3: [u8] from "./icons/notifications/3.png");
-    flate!(static ICO_4: [u8] from "./icons/notifications/4.png");
-    flate!(static ICO_5: [u8] from "./icons/notifications/5.png");
-    flate!(static ICO_6: [u8] from "./icons/notifications/6.png");
-    flate!(static ICO_7: [u8] from "./icons/notifications/7.png");
-    flate!(static ICO_8: [u8] from "./icons/notifications/8.png");
-    flate!(static ICO_9: [u8] from "./icons/notifications/9.png");
-
-    let ico = match amount {
-      -1 => ICO_SOME.as_ref(),
-      1 => ICO_1.as_ref(),
-      2 => ICO_2.as_ref(),
-      3 => ICO_3.as_ref(),
-      4 => ICO_4.as_ref(),
-      5 => ICO_5.as_ref(),
-      6 => ICO_6.as_ref(),
-      7 => ICO_7.as_ref(),
-      8 => ICO_8.as_ref(),
-      9 => ICO_9.as_ref(),
-      // more than 9, just stay at 9
-      _ => ICO_9.as_ref(),
-    };
-
-    let converted = Image::from_bytes(ico);
-
-    if let Ok(converted) = converted {
-      window.set_overlay_icon(Some(converted)).unwrap_or_default();
-    } else {
-      log!("Failed to convert notification icon: {:?}", converted.err());
-      window.set_overlay_icon(None).unwrap_or_default();
-    }
-  }
-}
-
-#[cfg(target_os = "macos")]
-fn notification_count_inner(_window: &tauri::WebviewWindow, amount: i64) {
-  use objc2_app_kit::NSApp;
-  use objc2_foundation::{MainThreadMarker, NSString};
-
-  let label = if amount > 0 {
-    Some(NSString::from_str(&format!("{amount}")))
-  } else if amount == -1 {
-    Some(NSString::from_str("●"))
-  } else {
-    None
-  };
-
-  if let Some(thread) = MainThreadMarker::new() {
-    unsafe {
-      let app = NSApp(thread);
-      let dock_tile = app.dockTile();
-      dock_tile.setBadgeLabel(label.as_deref());
-      dock_tile.display();
-    }
-  } else {
-    log!("Failed to mark main thread!");
   }
 }
 
