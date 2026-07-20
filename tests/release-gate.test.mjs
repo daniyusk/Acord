@@ -21,6 +21,16 @@ test('the build workflow runs release checks before packaging artifacts', async 
   assert.match(workflow, /pnpm test:runtime -- "src-tauri\/target\/\$\{\{ matrix\.config\.target \}\}\/release\/Acord"/)
 })
 
+test('the declared Rust minimum matches the build toolchain', async () => {
+  const [manifest, workflow] = await Promise.all([
+    readProjectFile('src-tauri/Cargo.toml'),
+    readProjectFile('.github/workflows/build.yml'),
+  ])
+
+  assert.match(manifest, /^rust-version = "1\.89"$/m)
+  assert.match(workflow, /toolchain: 1\.89/)
+})
+
 test('a draft release only consumes a successful build for its checked-out commit', async () => {
   const workflow = await readProjectFile('.github/workflows/create-release.yml')
 
