@@ -2,6 +2,16 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Mutex;
+
+static CONFIG_CACHE: Mutex<Option<Config>> = Mutex::new(None);
+
+#[allow(dead_code)]
+pub fn invalidate_config_cache() {
+  if let Ok(mut guard) = CONFIG_CACHE.lock() {
+    *guard = None;
+  }
+}
 
 use reqwest::Url;
 
@@ -161,6 +171,7 @@ impl Config {
 
   pub fn init() {
     get_config_file();
+    let _ = get_config();
   }
 
   pub fn validate(&self) -> Result<(), String> {
@@ -257,7 +268,13 @@ pub fn write_config_file(contents: String) -> Result<(), String> {
   config.validate()?;
   config
     .to_file(get_config_file())
-    .map_err(|error| format!("Error writing config: {error}"))
+    .map_err(|error| format!("Error writing config: {error}"))?;
+
+  if let Ok(mut guard) = CONFIG_CACHE.lock() {
+    *guard = Some(config);
+  }
+
+  Ok(())
 }
 
 fn validate_setting_list(name: &str, values: &[String], max_entries: usize) -> Result<(), String> {
@@ -285,9 +302,20 @@ pub fn default_config() -> Config {
 
 #[tauri::command]
 pub fn get_config() -> Config {
-  let config_str = read_config_file();
+  if let Ok(guard) = CONFIG_CACHE.lock() {
+    if let Some(config) = guard.as_ref() {
+      return config.clone();
+    }
+  }
 
-  Config::from_str(&config_str).expect("Error parsing config!")
+  let config_str = read_config_file();
+  let config = Config::from_str(&config_str).expect("Error parsing config!");
+
+  if let Ok(mut guard) = CONFIG_CACHE.lock() {
+    *guard = Some(config.clone());
+  }
+
+  config
 }
 
 #[tauri::command]
