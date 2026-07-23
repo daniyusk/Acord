@@ -47,7 +47,12 @@ export async function typingAnim() {
   // Once the "typing" is done, blink the cursor
   let cur = true
 
-  setInterval(() => {
+  const interval = setInterval(() => {
+    if (!document.querySelector('#loadingContainer') || !document.querySelector('#title')) {
+      clearInterval(interval)
+      return
+    }
+
     if (cur) {
       cur = false
 
