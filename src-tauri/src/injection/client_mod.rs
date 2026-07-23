@@ -23,7 +23,7 @@ pub static CLIENT_MODS: phf::Map<&'static str, ClientMod> = phf_map! {
 };
 
 fn enabled_client_mods() -> Vec<String> {
-  filter_enabled_client_mods(get_config().client_mods.unwrap_or_default())
+  filter_enabled_client_mods(get_config().client_mods.clone().unwrap_or_default())
 }
 
 fn filter_enabled_client_mods(configured_mods: Vec<String>) -> Vec<String> {

@@ -6,7 +6,7 @@ pub fn clear_cache() {
   use std::fs;
 
   let profiles_dir = profiles_dir();
-  let profile = get_config().profile.unwrap_or("default".to_string());
+  let profile = get_config().profile.clone().unwrap_or("default".to_string());
   let profile_dir = match profile_path(&profiles_dir, &profile) {
     Ok(profile_dir) => profile_dir,
     Err(error) => {

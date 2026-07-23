@@ -2,13 +2,13 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, RwLock};
 
-static CONFIG_CACHE: Mutex<Option<Config>> = Mutex::new(None);
+static CONFIG_CACHE: RwLock<Option<Arc<Config>>> = RwLock::new(None);
 
 #[allow(dead_code)]
 pub fn invalidate_config_cache() {
-  if let Ok(mut guard) = CONFIG_CACHE.lock() {
+  if let Ok(mut guard) = CONFIG_CACHE.write() {
     *guard = None;
   }
 }
@@ -273,8 +273,8 @@ pub fn write_config_file(contents: String) -> Result<(), String> {
     .to_file(get_config_file())
     .map_err(|error| format!("Error writing config: {error}"))?;
 
-  if let Ok(mut guard) = CONFIG_CACHE.lock() {
-    *guard = Some(config);
+  if let Ok(mut guard) = CONFIG_CACHE.write() {
+    *guard = Some(Arc::new(config));
   }
 
   Ok(())
@@ -304,18 +304,18 @@ pub fn default_config() -> Config {
 }
 
 #[tauri::command]
-pub fn get_config() -> Config {
-  if let Ok(guard) = CONFIG_CACHE.lock() {
+pub fn get_config() -> Arc<Config> {
+  if let Ok(guard) = CONFIG_CACHE.read() {
     if let Some(config) = guard.as_ref() {
-      return config.clone();
+      return Arc::clone(config);
     }
   }
 
   let config_str = read_config_file();
-  let config = Config::from_str(&config_str).expect("Error parsing config!");
+  let config = Arc::new(Config::from_str(&config_str).expect("Error parsing config!"));
 
-  if let Ok(mut guard) = CONFIG_CACHE.lock() {
-    *guard = Some(config.clone());
+  if let Ok(mut guard) = CONFIG_CACHE.write() {
+    *guard = Some(Arc::clone(&config));
   }
 
   config

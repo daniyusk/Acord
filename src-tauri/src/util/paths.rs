@@ -206,7 +206,7 @@ pub fn get_webdata_dir() -> PathBuf {
     Some(p) => p,
     None => {
       let cfg = get_config();
-      cfg.profile.unwrap_or("default".to_string())
+      cfg.profile.clone().unwrap_or("default".to_string())
     }
   };
   let profiles = profiles_dir();

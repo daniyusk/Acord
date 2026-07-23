@@ -12,7 +12,7 @@ use crate::{
 
 fn theme_is_enabled(name: String) -> bool {
   let config = get_config();
-  config.themes.unwrap_or_default().contains(&name)
+  config.themes.as_ref().map_or(false, |themes| themes.contains(&name))
 }
 
 #[tauri::command]
@@ -68,7 +68,7 @@ pub fn get_theme_names() -> Result<Vec<String>, String> {
 #[tauri::command]
 pub fn get_enabled_themes() -> Result<Vec<String>, String> {
   let config = get_config();
-  Ok(config.themes.unwrap_or_default())
+  Ok(config.themes.clone().unwrap_or_default())
 }
 
 #[tauri::command]

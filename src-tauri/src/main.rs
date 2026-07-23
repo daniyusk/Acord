@@ -87,7 +87,7 @@ fn main() {
   #[cfg(target_os = "windows")]
   log!("Are we on Windows 7: {}", helpers::is_windows_7());
 
-  let mut config = get_config();
+  let mut config = (*get_config()).clone();
 
   // Check if the deprecated theme option is being used
   if config.themes.is_none() {
@@ -289,7 +289,7 @@ fn main() {
         .decorations(true)
         .shadow(true)
         .transparent(
-          config.blur.unwrap_or("none".to_string()) != "none"
+          config.blur.as_deref().unwrap_or("none") != "none"
         )
         .zoom_hotkeys_enabled(true)
         .browser_extensions_enabled(true);
@@ -325,7 +325,7 @@ fn main() {
 
       if config.proxy_uri.is_some() || args::get_proxy().is_some() {
         // Prefer proxy from args if available
-        let proxy = args::get_proxy().unwrap_or_else(|| config.proxy_uri.unwrap_or_default().to_string());
+        let proxy = args::get_proxy().unwrap_or_else(|| config.proxy_uri.clone().unwrap_or_default());
 
         if !proxy.is_empty() {
           log!("Using proxy: {proxy}");

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::{
-  config::{get_config, Config},
+  config::get_config,
   log,
   util::paths::{profile_path, profiles_dir},
 };
@@ -53,7 +53,7 @@ pub fn get_profile_list() -> Vec<String> {
 #[tauri::command]
 pub fn get_current_profile_folder() -> PathBuf {
   let profiles_folder = profiles_dir();
-  let current_profile = get_config().profile.unwrap_or("default".to_string());
+  let current_profile = get_config().profile.clone().unwrap_or("default".to_string());
 
   match profile_path(&profiles_folder, &current_profile) {
     Ok(profile_folder) if profile_folder.exists() => profile_folder,
@@ -93,7 +93,7 @@ pub fn delete_profile(name: String) -> Result<(), String> {
   }
 
   // Set config to "default"
-  let mut config: Config = get_config();
+  let mut config = (*get_config()).clone();
 
   config.profile = Some("default".to_string());
 

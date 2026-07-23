@@ -68,7 +68,7 @@ pub fn window_zoom_level(win: tauri::WebviewWindow, value: Option<f64>) {
   let zoom = sanitize_zoom_level(
     value.unwrap_or(
       crate::config::get_config()
-        .zoom
+        .zoom.clone()
         .unwrap_or("1.0".to_string())
         .parse::<f64>()
         .unwrap_or(1.0),
