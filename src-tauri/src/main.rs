@@ -7,7 +7,7 @@
 use notify_rust::set_application;
 #[cfg(target_os = "windows")]
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::{env, str::FromStr, time::Duration};
+use std::{env, str::FromStr};
 #[cfg(target_os = "windows")]
 use tauri::webview::NewWindowResponse;
 use tauri::{Manager, Url, WebviewWindowBuilder};
@@ -272,11 +272,7 @@ fn main() {
         // Stop flashing the taskbar icon
         let _ = window.request_user_attention(None);
       }
-      tauri::WindowEvent::Resized { .. } => {
-        // Sleep for a millisecond (blocks the thread but it doesn't really matter)
-        // https://github.com/tauri-apps/tauri/issues/6322#issuecomment-1448141495
-        std::thread::sleep(Duration::from_micros(1));
-      }
+
       tauri::WindowEvent::Destroyed => {
         log!("Destroyed window");
         functionality::cache::maybe_clear_cache();

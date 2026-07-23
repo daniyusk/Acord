@@ -54,16 +54,20 @@ pub async fn localize_js(url: String) -> String {
 
 #[tauri::command]
 pub async fn localize_all_js(urls: Vec<String>) -> Vec<String> {
-  let mut localized: Vec<String> = vec![];
+  let mut handles = Vec::new();
 
   for (index, url) in urls.into_iter().enumerate() {
     if index >= MAX_IMPORT_URLS {
       log!("Skipping JavaScript import beyond the {MAX_IMPORT_URLS} URL limit");
-      localized.push(String::new());
-      continue;
+      handles.push(tauri::async_runtime::spawn(async move { String::new() }));
+    } else {
+      handles.push(tauri::async_runtime::spawn(async move { localize_js(url).await }));
     }
+  }
 
-    localized.push(localize_js(url).await)
+  let mut localized = Vec::with_capacity(handles.len());
+  for handle in handles {
+    localized.push(handle.await.unwrap_or_default());
   }
 
   localized

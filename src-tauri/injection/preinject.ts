@@ -175,10 +175,10 @@ async function init() {
  * Nasty helper function _for updating the text on the overlay
  */
 async function updateOverlay(toUpdate: Record<string, string>) {
-  const midtitle = document.getElementById('#midtitle')
-  const subtitle = document.getElementById('#subtitle')
-  const safemode = document.getElementById('#safemode')
-  const logs = document.getElementById('#logContainer')
+  const midtitle = document.getElementById('midtitle')
+  const subtitle = document.getElementById('subtitle')
+  const safemode = document.getElementById('safemode')
+  const logs = document.getElementById('logContainer')
 
   for (const [key, value] of Object.entries(toUpdate)) {
     if (key === 'midtitle' && midtitle) midtitle.innerHTML = value
