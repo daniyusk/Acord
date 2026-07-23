@@ -18,12 +18,14 @@ export function proxyXHR() {
 }
 
 export function proxyAddEventListener() {
-  const original = window.addEventListener
+  const originalAdd = window.addEventListener
+  const originalRemove = window.removeEventListener
+  const beforeUnloadListeners = new WeakMap<EventListenerOrEventListenerObject, EventListener>()
 
   window.addEventListener = function(...args: Parameters<typeof window.addEventListener>) {
     const [type, listener] = args
-    if (type === 'beforeunload') {
-      args[1] = (...listenerArgs: Parameters<EventListener>) => {
+    if (type === 'beforeunload' && listener) {
+      const wrapper: EventListener = (...listenerArgs: Parameters<EventListener>) => {
         // @ts-expect-error this is fine
         const isTrustedOverwrite = listenerArgs[0]?.isTrustedOverwrite
 
@@ -37,11 +39,29 @@ export function proxyAddEventListener() {
           })
         }
 
-        return ('handleEvent' in listener) ? listener.handleEvent(...listenerArgs) : listener(...listenerArgs)
+        return (typeof listener === 'object' && listener !== null && 'handleEvent' in listener)
+          ? listener.handleEvent(...listenerArgs)
+          : (listener as EventListener)(...listenerArgs)
+      }
+
+      beforeUnloadListeners.set(listener, wrapper)
+      args[1] = wrapper
+    }
+
+    return originalAdd.apply(this, args)
+  }
+
+  window.removeEventListener = function(...args: Parameters<typeof window.removeEventListener>) {
+    const [type, listener] = args
+    if (type === 'beforeunload' && listener) {
+      const wrapper = beforeUnloadListeners.get(listener)
+      if (wrapper) {
+        args[1] = wrapper
+        beforeUnloadListeners.delete(listener)
       }
     }
 
-    return original(...args)
+    return originalRemove.apply(this, args)
   }
 }
 
