@@ -27,14 +27,14 @@ pub static PTT_ENABLED: AtomicBool = AtomicBool::new(false);
 #[tauri::command]
 pub fn get_keybinds() -> HashMap<KeybindAction, Vec<KeyStruct>> {
   let config = get_config();
-  config.keybinds.unwrap_or_default()
+  config.keybinds.clone().unwrap_or_default()
 }
 
 #[tauri::command]
 pub fn set_keybinds(keybinds: HashMap<KeybindAction, Vec<KeyStruct>>) -> Result<(), String> {
   validate_keybinds(&keybinds)?;
 
-  let mut config = get_config();
+  let mut config = get_config().as_ref().clone();
   config.keybinds = Some(keybinds);
 
   if let Err(error) = set_config(config) {
@@ -170,7 +170,7 @@ pub fn start_keybind_watcher(win: &tauri::WebviewWindow) {
     };
     PTT_ENABLED.store(state.state, std::sync::atomic::Ordering::Relaxed);
 
-    let mut config = get_config();
+    let mut config = get_config().as_ref().clone();
     config.push_to_talk = Some(state.state);
     if let Err(error) = set_config(config) {
       log!("Failed to persist push-to-talk configuration: {error}");

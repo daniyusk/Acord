@@ -80,7 +80,7 @@ pub fn configure(window: &tauri::WebviewWindow) {
   #[cfg(feature = "blur")]
   apply_effect(
     window.clone(),
-    _config.blur.unwrap_or("none".to_string()).as_str(),
+    _config.blur.as_deref().unwrap_or("none"),
   );
 
   create_tray(handle).unwrap_or_else(|e| log!("Error creating tray icon: {:?}", e));
