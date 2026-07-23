@@ -49,17 +49,7 @@ pub async fn send_notification(
       return;
     }
   };
-  let client = match reqwest::Client::builder()
-    .redirect(reqwest::redirect::Policy::none())
-    .build()
-  {
-    Ok(client) => client,
-    Err(error) => {
-      log!("Failed to create HTTP client for notification icon: {error}");
-      send_notification_internal(app, title, body, String::new(), additional_data);
-      return;
-    }
-  };
+  let client = crate::util::helpers::get_http_client();
   let res = match client.get(icon).send().await {
     Ok(res) => res,
     Err(e) => {

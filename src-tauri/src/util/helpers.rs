@@ -1,17 +1,25 @@
 use super::paths::*;
 use base64::{engine::general_purpose, Engine as _};
-use std::{path::*, process::Command};
+use std::{path::*, process::Command, sync::OnceLock};
 
 use crate::log;
 use crate::util::input_validation::{validate_http_url, MAX_REMOTE_RESPONSE_BYTES};
 
+static HTTP_CLIENT: OnceLock<reqwest::Client> = OnceLock::new();
+
+pub fn get_http_client() -> &'static reqwest::Client {
+  HTTP_CLIENT.get_or_init(|| {
+    reqwest::Client::builder()
+      .redirect(reqwest::redirect::Policy::none())
+      .build()
+      .unwrap_or_else(|_| reqwest::Client::new())
+  })
+}
+
 #[tauri::command]
 pub async fn fetch_image(url: String) -> Option<String> {
   let url = validate_http_url(&url).ok()?;
-  let client = reqwest::Client::builder()
-    .redirect(reqwest::redirect::Policy::none())
-    .build()
-    .ok()?;
+  let client = get_http_client();
   let response = client
     .get(url)
     .header("User-Agent", "Acord")

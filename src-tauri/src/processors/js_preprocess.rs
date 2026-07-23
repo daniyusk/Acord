@@ -1,4 +1,5 @@
 use crate::log;
+use crate::util::helpers::get_http_client;
 use crate::util::input_validation::{
   validate_http_url, validate_payload_size, MAX_JAVASCRIPT_BYTES,
 };
@@ -14,16 +15,7 @@ pub async fn localize_js(url: String) -> String {
     }
   };
 
-  let client = match reqwest::Client::builder()
-    .redirect(reqwest::redirect::Policy::none())
-    .build()
-  {
-    Ok(client) => client,
-    Err(error) => {
-      log!("Failed to create HTTP client: {error}");
-      return String::new();
-    }
-  };
+  let client = get_http_client();
 
   let response = match client.get(url.clone()).send().await {
     Ok(r) => r,

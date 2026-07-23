@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::fs;
+use std::sync::OnceLock;
 
 #[cfg(not(target_os = "windows"))]
 use std::io::Read;
@@ -14,6 +15,9 @@ use crate::util::{
 use crate::util::input_validation::{
   validate_file_name, validate_http_url, MAX_REMOTE_RESPONSE_BYTES,
 };
+
+#[cfg(not(target_os = "windows"))]
+use crate::util::helpers::get_http_client;
 
 #[cfg(not(target_os = "windows"))]
 const MAX_CSS_IMPORTS: usize = 32;
@@ -44,7 +48,8 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
     return String::new();
   }
 
-  let reg = Regex::new(r#"(?m)^@import url\((?:"|'|)(?:|.+?)\/\/(.+?)(?:"|'|)\);"#).unwrap();
+  static IMPORT_REG: OnceLock<Regex> = OnceLock::new();
+  let reg = IMPORT_REG.get_or_init(|| Regex::new(r#"(?m)^@import url\((?:"|'|)(?:|.+?)\/\/(.+?)(?:"|'|)\);"#).unwrap());
   let mut seen_urls: Vec<String> = vec![];
   let mut new_css = css.clone();
   let cache_file_name = match validate_file_name(&name) {
@@ -65,16 +70,7 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
     .collect();
 
   let mut tasks = Vec::new();
-  let client = match reqwest::Client::builder()
-    .redirect(reqwest::redirect::Policy::none())
-    .build()
-  {
-    Ok(client) => client,
-    Err(error) => {
-      log!("Failed to create HTTP client: {error}");
-      return String::new();
-    }
-  };
+  let client = get_http_client().clone();
 
   // If we need to cache CSS, first check and use cache if it exists
   if get_config().cache_css.unwrap_or(true) {
@@ -257,7 +253,8 @@ pub fn localize_imports(_win: tauri::WebviewWindow, css: String, _name: String) 
   let mut new_css = css.clone();
   let mut seen_imports: Vec<String> = vec![];
 
-  let reg = Regex::new(r#"@import url\((?:"|'|)(?:|.+?)\/\/(.+?)(?:"|'|)\);"#).unwrap();
+  static IMPORT_REG: OnceLock<Regex> = OnceLock::new();
+  let reg = IMPORT_REG.get_or_init(|| Regex::new(r#"@import url\((?:"|'|)(?:|.+?)\/\/(.+?)(?:"|'|)\);"#).unwrap());
 
   for groups in reg.captures_iter(css.as_str()) {
     let full_import = groups.get(0).unwrap().as_str();
@@ -285,7 +282,8 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
   use base64::{engine::general_purpose, Engine as _};
   use tauri::Emitter;
 
-  let img_reg = Regex::new(r#"url\((?:'|"|)(http.+?)(?:'|"|)\)"#).unwrap();
+  static IMG_REG: OnceLock<Regex> = OnceLock::new();
+  let img_reg = IMG_REG.get_or_init(|| Regex::new(r#"url\((?:'|"|)(http.+?)(?:'|"|)\)"#).unwrap());
   let mut new_css = css.clone();
   let matches: Vec<String> = img_reg
     .captures_iter(&css)
@@ -311,16 +309,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
     return new_css;
   }
 
-  let client = match reqwest::Client::builder()
-    .redirect(reqwest::redirect::Policy::none())
-    .build()
-  {
-    Ok(client) => client,
-    Err(error) => {
-      log!("Failed to create HTTP client: {error}");
-      return new_css;
-    }
-  };
+  let client = get_http_client().clone();
 
   for url in matches {
     let request_url = match validate_http_url(url) {
