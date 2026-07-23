@@ -83,6 +83,7 @@ pub fn start_rpc_server(win: tauri::WebviewWindow) {
 
   let config = get_config();
   let rpc_config = RPCConfig {
+    port: None,
     enable_process_scanner: config.rpc_process_scanner.unwrap_or(true),
     enable_ipc_connector: config.rpc_ipc_connector.unwrap_or(true),
     enable_websocket_connector: config.rpc_websocket_connector.unwrap_or(true),
@@ -237,7 +238,7 @@ fn blank_activity() -> DetectableActivity {
 pub fn get_windows() -> Vec<Window> {
   let conn = window_titles::Connection::new().expect("Failed to connect to window titles");
   let system = System::new_with_specifics(
-    RefreshKind::nothing().with_processes(ProcessRefreshKind::everything()),
+    RefreshKind::nothing().with_processes(ProcessRefreshKind::nothing()),
   );
 
   let windows: Vec<Window> = conn
