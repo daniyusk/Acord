@@ -4,9 +4,9 @@ use rsrpc::{
 };
 use std::sync::{
   atomic::{AtomicBool, Ordering},
-  Arc, Mutex,
+  Arc, Mutex, OnceLock,
 };
-use sysinfo::{ProcessRefreshKind, RefreshKind, System};
+use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, System};
 use tauri::{Emitter, Listener};
 use window_titles::ConnectionTrait;
 
@@ -14,6 +14,8 @@ use crate::{config::get_config, log, util::paths::custom_detectables_path};
 
 // We keep track of this A) To not spam enable and B) to allow for the user to manually disable without it being re-enabled automatically
 static OBS_OPEN: AtomicBool = AtomicBool::new(false);
+
+static SYSTEM: OnceLock<Mutex<System>> = OnceLock::new();
 
 #[derive(Clone, serde::Deserialize)]
 struct Payload {
@@ -248,16 +250,23 @@ fn blank_activity() -> DetectableActivity {
 #[tauri::command(async)]
 pub fn get_windows() -> Vec<Window> {
   let conn = window_titles::Connection::new().expect("Failed to connect to window titles");
-  let system = System::new_with_specifics(
-    RefreshKind::nothing().with_processes(ProcessRefreshKind::nothing()),
+  let window_list = conn.window_titles().unwrap_or_default();
+
+  let pids: Vec<Pid> = window_list.iter().map(|w| Pid::from_u32(w.pid)).collect();
+
+  let system_mutex = SYSTEM.get_or_init(|| Mutex::new(System::new()));
+  let mut system = system_mutex.lock().unwrap();
+
+  system.refresh_processes_specifics(
+    ProcessesToUpdate::Some(&pids),
+    true,
+    ProcessRefreshKind::everything(),
   );
 
-  let windows: Vec<Window> = conn
-    .window_titles()
-    .unwrap_or_default()
+  let windows: Vec<Window> = window_list
     .into_iter()
     .map(|w| {
-      let proc = system.process(sysinfo::Pid::from_u32(w.pid));
+      let proc = system.process(Pid::from_u32(w.pid));
       let process_name = if let Some(proc) = proc {
         proc.name().to_string_lossy().to_string()
       } else {
@@ -274,3 +283,4 @@ pub fn get_windows() -> Vec<Window> {
 
   windows
 }
+
