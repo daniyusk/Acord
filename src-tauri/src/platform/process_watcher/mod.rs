@@ -1,3 +1,17 @@
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ProcessInfo {
+  pub pid: u64,
+  pub path: String,
+  pub arguments: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ProcessEvent {
+  Started(ProcessInfo),
+  Exited { pid: u64 },
+  Resync,
+}
+
 #[cfg(target_os = "windows")]
 mod windows;
 #[cfg(target_os = "windows")]

@@ -10,7 +10,10 @@ use sysinfo::{Pid, ProcessRefreshKind, ProcessesToUpdate, System};
 use tauri::{Emitter, Listener};
 use window_titles::ConnectionTrait;
 
-use crate::{config::get_config, log, util::paths::custom_detectables_path};
+use crate::{
+  config::get_config, log, platform::process_watcher::ProcessEvent,
+  util::paths::custom_detectables_path,
+};
 
 // We keep track of this A) To not spam enable and B) to allow for the user to manually disable without it being re-enabled automatically
 static OBS_OPEN: AtomicBool = AtomicBool::new(false);
@@ -84,9 +87,11 @@ pub fn start_rpc_server(win: tauri::WebviewWindow) {
   };
 
   let config = get_config();
+  let process_scanner_enabled = config.rpc_process_scanner.unwrap_or(true);
   let rpc_config = RPCConfig {
     port: config.rpc_port.unwrap_or(1337),
-    enable_process_scanner: config.rpc_process_scanner.unwrap_or(true),
+    // Acord drives process detection from OS events. Keep rsRPC's polling loop disabled.
+    enable_process_scanner: false,
     enable_ipc_connector: config.rpc_ipc_connector.unwrap_or(true),
     enable_websocket_connector: config.rpc_websocket_connector.unwrap_or(true),
     enable_secondary_events: config.rpc_secondary_events.unwrap_or(true),
@@ -212,10 +217,16 @@ pub fn start_rpc_server(win: tauri::WebviewWindow) {
     .append_detectables(get_local_detectables());
 
   let scan_server = server.clone();
-  if config.rpc_process_scanner.unwrap_or(true) {
-    crate::platform::process_watcher::start_process_watcher(move || {
+  if process_scanner_enabled {
+    crate::platform::process_watcher::start_process_watcher(move |event| {
       if let Ok(mut s) = scan_server.lock() {
-        s.scan_for_processes();
+        match event {
+          ProcessEvent::Started(process) => {
+            s.process_started(process.pid, process.path, process.arguments);
+          }
+          ProcessEvent::Exited { pid } => s.process_exited(pid),
+          ProcessEvent::Resync => s.scan_for_processes(),
+        }
       }
     });
   } else {
@@ -283,4 +294,3 @@ pub fn get_windows() -> Vec<Window> {
 
   windows
 }
-

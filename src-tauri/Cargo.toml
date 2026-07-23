@@ -33,7 +33,7 @@ phf = { version = "0.13", features = ["macros"] }
 sysinfo = "0.37"
 chrono = { version = "0.4", default-features = false, features = ["clock"] }
 regex = "1.11"
-rsrpc = { git = "https://www.github.com/SpikeHD/rsRPC", tag = "v0.28.0", optional = true }
+rsrpc = { path = "vendor/rsrpc", optional = true }
 window_titles = { git = "https://github.com/SpikeHD/window_titles", branch = "master" }
 mundy = { version = "0.2", features = ["accent-color", "callback"] }
 notify-rust = "4.11"
@@ -46,6 +46,7 @@ system-idle-time = "1.0.0"
 gtk = "0.18"
 webkit2gtk = { version = "2.0", features = ["v2_4"] }
 wgpu = { version = "26.0", default-features = true }
+proc-connector = "0.1.6"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.5.2"
@@ -82,6 +83,7 @@ tauri-winrt-notification = "0.7"
 webview2-com = "0.38.0"
 win7-notifications = "0.4.5"
 windows-implement = "0.60.0"
+wmi = { version = "0.18.4", default-features = false }
 
 [target.'cfg(windows)'.dependencies.windows]
 version = "0.61.3"
