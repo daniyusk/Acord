@@ -1,11 +1,17 @@
 // Observes the DOM for newly added nodes and executes a callback for each.
-function observeDom<T>(rootElm: Node, callbackFn: (node: Node, resolve: (value: T) => void) => boolean, subtree: boolean): Promise<T> {
+function observeDom<T>(
+  rootElm: Node,
+  callbackFn: (node: Node, resolve: (value: T) => void) => boolean,
+  subtree: boolean,
+  onObserverCreated?: (observer: MutationObserver) => void
+): Promise<T> {
   return new Promise((resolve) => {
     const observer = new MutationObserver(mutations => {
       for (const mutation of mutations) {
         if (mutation.type === 'childList') {
-          const addedNodes = Array.from(mutation.addedNodes)
-          for (const node of addedNodes) {
+          const addedNodes = mutation.addedNodes
+          for (let i = 0; i < addedNodes.length; i++) {
+            const node = addedNodes[i]
             if (!callbackFn(node, resolve)) {
               observer.disconnect()
               return
@@ -14,6 +20,11 @@ function observeDom<T>(rootElm: Node, callbackFn: (node: Node, resolve: (value: 
         }
       }
     })
+
+    if (onObserverCreated) {
+      onObserverCreated(observer)
+    }
+
     observer.observe(rootElm, {
       childList: true,
       subtree
@@ -43,42 +54,80 @@ export async function waitForElmEx(queries: Array<query> | query, cfg: Partial<w
 
   let query: string[]
   let stop = false
-  if (timeout) setTimeout(() => { stop = true }, timeout)
+  let activeObserver: MutationObserver | null = null
+  let resolveCurrentObserve: ((value: Element) => void) | null = null
+
+  if (timeout) {
+    setTimeout(() => {
+      stop = true
+      if (activeObserver) {
+        activeObserver.disconnect()
+        activeObserver = null
+      }
+      if (resolveCurrentObserve) {
+        resolveCurrentObserve(root)
+        resolveCurrentObserve = null
+      }
+    }, timeout)
+  }
 
   if (isString(queries)) queries = [queries]
   loop: while (queries.length) {
+    if (stop) break
+
     // prepare query
     const q = queries.shift()
     if (!q) break
     query = isString(q) ? [q] : q
     const directChild = query.every(q => q[0] === '>')
     if (directChild) query = query.map(q => q.slice(1))
+
     // no observe if this elm already exist
     const elm = directChild ? subtreeFind(root, query) : queryFind(root, query)
-    if (elm) { root = elm; if (callbackFn) callbackFn(root); continue loop }
+    if (elm) {
+      root = elm
+      if (callbackFn) callbackFn(root)
+      continue loop
+    }
+
     // start observer
-    root = await observeDom(root, (node, res) => {
-      if (stop) { res(root); return false }
-      if (node.nodeType !== Node.ELEMENT_NODE) return true
-      const e = node as Element
-      for (let q of query) {
-        if (!directChild) {
-          const s = q[0] === '>'
-          if (s) q = q.slice(1)
-        }
-        let ret = e.matches(q) ? e : null
-        if (!ret) {
-          ret = e.querySelector(q)
-        }
-        if (ret) {
-          res(e)
+    root = await observeDom(
+      root,
+      (node, res) => {
+        resolveCurrentObserve = res
+        if (stop) {
+          res(root)
           return false
         }
+        if (node.nodeType !== Node.ELEMENT_NODE) return true
+        const e = node as Element
+        for (let selector of query) {
+          if (!directChild) {
+            const s = selector[0] === '>'
+            if (s) selector = selector.slice(1)
+          }
+          const matched = e.matches(selector) ? e : e.querySelector(selector)
+          if (matched) {
+            res(matched)
+            return false
+          }
+        }
+        return true
+      },
+      !directChild,
+      (observer) => {
+        activeObserver = observer
       }
-      return true
-    }, !directChild) as Element
+    ) as Element
+
+    activeObserver = null
+    resolveCurrentObserve = null
+
+    if (stop) break
+
     // callback after found
     if (callbackFn) callbackFn(root)
   }
   return root
 }
+
