@@ -4,20 +4,20 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - '.github/workflows/build.yml'
-      - 'package.json'
-      - 'src-tauri/**/*'
-      - 'src/**/*'
-      - 'updater/**/*'
+      - ".github/workflows/build.yml"
+      - "package.json"
+      - "src-tauri/**/*"
+      - "src/**/*"
+      - "updater/**/*"
     branches:
       - main
   pull_request:
     paths:
-      - '.github/workflows/build.yml'
-      - 'package.json'
-      - 'src-tauri/**/*'
-      - 'src/**/*'
-      - 'updater/**/*'
+      - ".github/workflows/build.yml"
+      - "package.json"
+      - "src-tauri/**/*"
+      - "src/**/*"
+      - "updater/**/*"
 
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
@@ -36,21 +36,21 @@ jobs:
       matrix:
         config:
           - platform: ubuntu-22.04
-            target: 'x86_64-unknown-linux-gnu'
+            target: "x86_64-unknown-linux-gnu"
           - platform: ubuntu-22.04
-            target: 'aarch64-unknown-linux-gnu'
+            target: "aarch64-unknown-linux-gnu"
           - platform: ubuntu-22.04
-            target: 'armv7-unknown-linux-gnueabihf'
+            target: "armv7-unknown-linux-gnueabihf"
 
           - platform: macos-latest
-            target: 'x86_64-apple-darwin'
+            target: "x86_64-apple-darwin"
           - platform: macos-latest
-            target: 'aarch64-apple-darwin'
+            target: "aarch64-apple-darwin"
 
           - platform: windows-latest
-            target: 'x86_64-pc-windows-msvc'
+            target: "x86_64-pc-windows-msvc"
           - platform: windows-latest
-            target: 'aarch64-pc-windows-msvc'
+            target: "aarch64-pc-windows-msvc"
 
     steps:
       - uses: actions-rust-lang/setup-rust-toolchain@v1.12
@@ -162,6 +162,9 @@ jobs:
       - name: Add target
         run: rustup target add ${{ matrix.config.target }}
 
+      - name: Verify platform-specific Rust routing
+        run: cargo check --manifest-path src-tauri/Cargo.toml --target ${{ matrix.config.target }} --no-default-features
+
       - name: (Non-Linux) Build updater
         if: matrix.config.platform != 'ubuntu-22.04'
         run: pnpm build:updater
@@ -266,7 +269,8 @@ jobs:
       # - src-tauri/target/${{ matrix.config.target }}/release/bundle/macos/Acord.app
       - name: (Windows) Compress build
         if: matrix.config.platform == 'windows-latest'
-        run: cd src-tauri/target/${{ matrix.config.target }}/release && 7z a -tzip -mx9 Acord.zip
+        run:
+          cd src-tauri/target/${{ matrix.config.target }}/release && 7z a -tzip -mx9 Acord.zip
           Acord.exe
           updater.exe
           .portable

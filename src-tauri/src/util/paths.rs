@@ -36,13 +36,7 @@ pub fn get_config_dir() -> PathBuf {
     return local_config_dir;
   }
 
-  #[cfg(target_os = "windows")]
-  let appdata = dirs::data_dir().unwrap_or_default();
-
-  #[cfg(not(target_os = "windows"))]
-  let appdata = dirs::config_dir().unwrap_or_default();
-
-  let config_dir = appdata.join("acord");
+  let config_dir = crate::platform::paths::config_root();
 
   create_if_not_exists(&config_dir);
 
@@ -84,17 +78,7 @@ pub fn get_plugin_dir() -> std::path::PathBuf {
     return local_plugin_dir;
   }
 
-  #[cfg(target_os = "windows")]
-  let plugin_dir = dirs::home_dir()
-    .unwrap_or_default()
-    .join("acord")
-    .join("plugins");
-
-  #[cfg(not(target_os = "windows"))]
-  let plugin_dir = dirs::config_dir()
-    .unwrap_or_default()
-    .join("acord")
-    .join("plugins");
+  let plugin_dir = crate::platform::paths::user_content_root().join("plugins");
 
   create_if_not_exists(&plugin_dir);
 
@@ -113,17 +97,7 @@ pub fn get_theme_dir() -> std::path::PathBuf {
     return local_theme_dir;
   }
 
-  #[cfg(target_os = "windows")]
-  let theme_dir = dirs::home_dir()
-    .unwrap_or_default()
-    .join("acord")
-    .join("themes");
-
-  #[cfg(not(target_os = "windows"))]
-  let theme_dir = dirs::config_dir()
-    .unwrap_or_default()
-    .join("acord")
-    .join("themes");
+  let theme_dir = crate::platform::paths::user_content_root().join("themes");
 
   create_if_not_exists(&theme_dir);
 
@@ -147,17 +121,7 @@ pub fn get_extensions_dir() -> PathBuf {
     return extensions_folder;
   }
 
-  #[cfg(target_os = "windows")]
-  let extensions_dir = dirs::home_dir()
-    .unwrap_or_default()
-    .join("acord")
-    .join("extensions");
-
-  #[cfg(not(target_os = "windows"))]
-  let extensions_dir = dirs::config_dir()
-    .unwrap_or_default()
-    .join("acord")
-    .join("extensions");
+  let extensions_dir = crate::platform::paths::user_content_root().join("extensions");
 
   create_if_not_exists(&extensions_dir);
 
@@ -177,13 +141,7 @@ pub fn get_main_extension_path() -> PathBuf {
     return extension_folder;
   }
 
-  #[cfg(target_os = "windows")]
-  let appdata = dirs::data_dir().unwrap_or_default();
-
-  #[cfg(not(target_os = "windows"))]
-  let appdata = dirs::config_dir().unwrap_or_default();
-
-  let extension_dir = appdata.join("acord").join("extension");
+  let extension_dir = crate::platform::paths::config_root().join("extension");
 
   create_if_not_exists(&extension_dir);
 
@@ -292,13 +250,7 @@ pub fn custom_detectables_path() -> PathBuf {
     return current_exe.parent().unwrap().join("detectables.json");
   }
 
-  #[cfg(target_os = "windows")]
-  let appdata = dirs::data_dir().unwrap_or_default();
-
-  #[cfg(not(target_os = "windows"))]
-  let appdata = dirs::config_dir().unwrap_or_default();
-
-  appdata.join("acord").join("detectables.json")
+  crate::platform::paths::config_root().join("detectables.json")
 }
 
 pub fn log_file_path() -> PathBuf {
@@ -313,13 +265,9 @@ pub fn log_file_path() -> PathBuf {
       .join("latest.log");
   }
 
-  #[cfg(target_os = "windows")]
-  let appdata = dirs::data_dir().unwrap_or_default();
-
-  #[cfg(not(target_os = "windows"))]
-  let appdata = dirs::config_dir().unwrap_or_default();
-
-  appdata.join("acord").join("logs").join("latest.log")
+  crate::platform::paths::config_root()
+    .join("logs")
+    .join("latest.log")
 }
 
 #[cfg(test)]

@@ -85,6 +85,8 @@ pub fn configure(window: &tauri::WebviewWindow) {
 
   create_tray(handle).unwrap_or_else(|e| log!("Error creating tray icon: {:?}", e));
 
+  crate::platform::webview::configure_after_creation(window);
+
   #[cfg(target_os = "windows")]
   windows::configure(window);
 
