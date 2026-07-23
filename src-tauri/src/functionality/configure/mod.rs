@@ -17,7 +17,7 @@ use crate::{
   injection::plugin::load_plugins,
   log,
   util::{
-    color::start_os_accent_subscriber,
+    color::init_os_accent_subscriber,
     window_helpers::{set_user_agent, window_zoom_level},
   },
 };
@@ -68,7 +68,7 @@ pub fn configure(window: &tauri::WebviewWindow) {
   }
 
   // If the subscription is dropped, Mundy's internal thread will exit and no events will ever be recieved
-  Box::leak(Box::new(start_os_accent_subscriber(window)));
+  init_os_accent_subscriber(window);
 
   #[cfg(feature = "hotkeys")]
   #[cfg(not(target_os = "macos"))]

@@ -5,9 +5,15 @@ use tauri::Emitter;
 use crate::log;
 
 static ACCENT_COLOR: Mutex<Option<(u8, u8, u8, u8)>> = Mutex::new(None);
+static ACCENT_SUBSCRIPTION: Mutex<Option<Subscription>> = Mutex::new(None);
 
 pub fn set_accent_color(r: u8, g: u8, b: u8, a: u8) {
   ACCENT_COLOR.lock().unwrap().replace((r, g, b, a));
+}
+
+pub fn init_os_accent_subscriber(win: &tauri::WebviewWindow) {
+  let sub = start_os_accent_subscriber(win);
+  *ACCENT_SUBSCRIPTION.lock().unwrap() = Some(sub);
 }
 
 pub fn start_os_accent_subscriber(win: &tauri::WebviewWindow) -> Subscription {

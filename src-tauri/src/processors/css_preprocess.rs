@@ -55,7 +55,14 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
     }
   };
 
-  let matches = reg.captures_iter(Box::leak(css.into_boxed_str()));
+  let matches: Vec<(String, String)> = reg
+    .captures_iter(&css)
+    .filter_map(|groups| {
+      let full_import = groups.get(0)?.as_str().to_string();
+      let url = groups.get(1)?.as_str().replace(['\'', '\"'], "");
+      Some((full_import, url))
+    })
+    .collect();
 
   let mut tasks = Vec::new();
   let client = match reqwest::blocking::Client::builder()
@@ -87,9 +94,7 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
     }
   }
 
-  for groups in matches {
-    let full_import = groups.get(0).unwrap().as_str();
-    let url = groups.get(1).unwrap().as_str().replace(['\'', '\"'], "");
+  for (full_import, url) in matches {
 
     if url.is_empty() {
       continue;
@@ -97,13 +102,13 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
 
     if seen_urls.contains(&url) {
       // Remove the import statement from the css
-      new_css = new_css.replace(full_import, "");
+      new_css = new_css.replace(&full_import, "");
       continue;
     }
 
     if seen_urls.len() >= MAX_CSS_IMPORTS {
       log!("Skipping CSS imports beyond the {MAX_CSS_IMPORTS} URL limit");
-      new_css = new_css.replace(full_import, "");
+      new_css = new_css.replace(&full_import, "");
       continue;
     }
 
@@ -111,26 +116,28 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
       Ok(url) => url,
       Err(error) => {
         log!("Skipping invalid CSS import URL: {error}");
-        new_css = new_css.replace(full_import, "");
+        new_css = new_css.replace(&full_import, "");
         continue;
       }
     };
 
     let win_clone = win.clone(); // For use within the thread
     let client = client.clone();
+    let url_clone = url.clone();
+    let full_import_clone = full_import.clone();
 
     seen_urls.push(url.clone());
 
     tasks.push(std::thread::spawn(move || {
-      log!("Getting: {}", &url);
+      log!("Getting: {}", &url_clone);
 
       let response = match client.get(request_url).send() {
         Ok(r) => r,
         Err(e) => {
           log!("Request failed: {}", e);
-          log!("URL: {}", &url);
+          log!("URL: {}", &url_clone);
 
-          return Some((full_import.to_owned(), String::new()));
+          return Some((full_import_clone.clone(), String::new()));
         }
       };
 
@@ -140,9 +147,9 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
           .is_some_and(|length| length > MAX_CSS_BYTES as u64)
       {
         log!("Request failed: {}", response.status());
-        log!("URL: {}", &url);
+        log!("URL: {}", &url_clone);
 
-        return Some((full_import.to_owned(), String::new()));
+        return Some((full_import_clone.clone(), String::new()));
       }
 
       let mut text = String::new();
@@ -152,18 +159,18 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
         .is_err()
         || validate_payload_size(&text, MAX_CSS_BYTES, "CSS import").is_err()
       {
-        return Some((full_import.to_owned(), String::new()));
+        return Some((full_import_clone.clone(), String::new()));
       }
 
       // Emit a loading log
       win_clone
         .emit(
           "loading_log",
-          format!("Processed CSS import: {}", url.clone()),
+          format!("Processed CSS import: {}", url_clone),
         )
         .unwrap_or_default();
 
-      Some((full_import.to_owned(), text))
+      Some((full_import_clone, text))
     }));
   }
 
@@ -261,7 +268,7 @@ pub fn localize_imports(_win: tauri::WebviewWindow, css: String, _name: String) 
     }
 
     seen_imports.push(url.to_string());
-    new_css = new_css.replace(full_import, "");
+    new_css = new_css.replace(&full_import, "");
   }
 
   // Now add all the @import statements to the top
@@ -280,14 +287,15 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
 
   let img_reg = Regex::new(r#"url\((?:'|"|)(http.+?)(?:'|"|)\)"#).unwrap();
   let mut new_css = css.clone();
-  let matches = img_reg.captures_iter(Box::leak(css.clone().into_boxed_str()));
+  let matches: Vec<String> = img_reg
+    .captures_iter(&css)
+    .filter_map(|groups| groups.get(1).map(|m| m.as_str().to_string()))
+    .collect();
 
   let mut seen_urls: Vec<String> = vec![];
 
   // This could be pretty computationally expensive for just a count, so I should change this sometime
-  let count = img_reg
-    .captures_iter(Box::leak(css.into_boxed_str()))
-    .count();
+  let count = img_reg.captures_iter(&css).count();
 
   let mut tasks = Vec::new();
 
@@ -314,8 +322,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
     }
   };
 
-  for groups in matches {
-    let url = groups.get(1).unwrap().as_str();
+  for url in matches {
     let request_url = match validate_http_url(url) {
       Ok(url) => url,
       Err(error) => {
@@ -355,7 +362,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
       continue;
     }
 
-    seen_urls.push((*url).to_string());
+    seen_urls.push(url.clone());
 
     // If there are more than 50 tasks, it's safe to say that there are probably too many images
     // to process, so we should just skip it
@@ -371,15 +378,16 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
 
     let win_clone = win.clone(); // Clone the Window handle for use in the async block
     let client = client.clone();
+    let url_clone = url.clone();
 
     tasks.push(std::thread::spawn(move || {
-      log!("Getting: {}", &url);
+      log!("Getting: {}", &url_clone);
 
       let response = match client.get(request_url).send() {
         Ok(r) => r,
         Err(e) => {
           log!("Request failed: {}", e);
-          log!("URL: {}", &url);
+          log!("URL: {}", &url_clone);
 
           win_clone
             .emit("loading_log", "An image failed to import...".to_string())
@@ -404,15 +412,15 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
       let b64 = general_purpose::STANDARD.encode(&bytes);
 
       win_clone
-        .emit("loading_log", format!("Processed image import: {}", url))
+        .emit("loading_log", format!("Processed image import: {}", url_clone))
         .unwrap_or_default();
 
-      if url.is_empty() {
+      if url_clone.is_empty() {
         return None;
       }
 
       Some((
-        url.to_owned(),
+        url_clone,
         format!("data:image/{filetype};base64,{b64}"),
       ))
     }));
