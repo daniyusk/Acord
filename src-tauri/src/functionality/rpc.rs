@@ -209,6 +209,17 @@ pub fn start_rpc_server(win: tauri::WebviewWindow) {
     .unwrap()
     .append_detectables(get_local_detectables());
 
+  let scan_server = server.clone();
+  if config.rpc_process_scanner.unwrap_or(true) {
+    crate::platform::process_watcher::start_process_watcher(move || {
+      if let Ok(mut s) = scan_server.lock() {
+        s.scan_for_processes();
+      }
+    });
+  } else {
+    crate::platform::process_watcher::stop_process_watcher();
+  }
+
   loop {
     std::thread::park();
   }
