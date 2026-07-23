@@ -7,12 +7,14 @@ export function cssSanitize(css: string) {
 
   document.body.appendChild(style)
 
-  if (!style.sheet) return
-
-  const result = Array.from(style.sheet.cssRules).map(rule => rule.cssText || '').join('\n')
-
-  document.body.removeChild(style)
-  return result
+  try {
+    if (!style.sheet) return
+    return Array.from(style.sheet.cssRules).map(rule => rule.cssText || '').join('\n')
+  } finally {
+    if (style.parentNode) {
+      style.parentNode.removeChild(style)
+    }
+  }
 }
 
 export async function timeout(ms: number) {
