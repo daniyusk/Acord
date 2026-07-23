@@ -83,7 +83,7 @@ pub fn start_rpc_server(win: tauri::WebviewWindow) {
 
   let config = get_config();
   let rpc_config = RPCConfig {
-    port: None,
+    port: config.rpc_port.unwrap_or(1337),
     enable_process_scanner: config.rpc_process_scanner.unwrap_or(true),
     enable_ipc_connector: config.rpc_ipc_connector.unwrap_or(true),
     enable_websocket_connector: config.rpc_websocket_connector.unwrap_or(true),
