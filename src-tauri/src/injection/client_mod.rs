@@ -62,7 +62,7 @@ pub fn load_mods_js() -> String {
       .script;
 
     tasks.push(std::thread::spawn(move || {
-      let response = match reqwest::blocking::get(script_url) {
+      let response = match tauri::async_runtime::block_on(async { reqwest::get(script_url).await }) {
         Ok(r) => r,
         Err(e) => {
           log!("Failed to load client mod JS for {}: {:?}", mod_name, e);
@@ -83,7 +83,7 @@ pub fn load_mods_js() -> String {
         return String::new();
       }
 
-      response.text().expect("Failed to parse client mod JS!")
+      tauri::async_runtime::block_on(async { response.text().await }).unwrap_or_default()
     }));
   }
 
@@ -149,7 +149,7 @@ pub fn load_mods_css() -> String {
     }
 
     tasks.push(std::thread::spawn(move || {
-      let response = match reqwest::blocking::get(styles_url) {
+      let response = match tauri::async_runtime::block_on(async { reqwest::get(styles_url).await }) {
         Ok(r) => r,
         Err(e) => {
           log!("Failed to load client mod CSS for {}: {:?}", mod_name, e);
@@ -168,7 +168,7 @@ pub fn load_mods_css() -> String {
         return String::new();
       }
 
-      response.text().expect("Failed to parse client mod CSS!")
+      tauri::async_runtime::block_on(async { response.text().await }).unwrap_or_default()
     }));
   }
 

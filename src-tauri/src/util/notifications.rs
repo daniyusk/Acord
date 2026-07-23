@@ -1,4 +1,4 @@
-use std::{io::Read, sync::atomic::Ordering};
+use std::sync::atomic::Ordering;
 
 use crate::{
   functionality::tray::{set_tray_icon, TrayIcon, TRAY_STATE},
@@ -22,7 +22,7 @@ pub struct AdditionalData {
 }
 
 #[tauri::command]
-pub fn send_notification(
+pub async fn send_notification(
   win: tauri::WebviewWindow,
   title: String,
   body: String,
@@ -49,7 +49,7 @@ pub fn send_notification(
       return;
     }
   };
-  let client = match reqwest::blocking::Client::builder()
+  let client = match reqwest::Client::builder()
     .redirect(reqwest::redirect::Policy::none())
     .build()
   {
@@ -60,7 +60,7 @@ pub fn send_notification(
       return;
     }
   };
-  let res = match client.get(icon).send() {
+  let res = match client.get(icon).send().await {
     Ok(res) => res,
     Err(e) => {
       log!("Failed to fetch notification icon: {:?}", e);
@@ -84,16 +84,13 @@ pub fn send_notification(
     return;
   }
 
-  let mut icon_bytes = Vec::new();
-  if res
-    .take(MAX_REMOTE_RESPONSE_BYTES + 1)
-    .read_to_end(&mut icon_bytes)
-    .is_err()
-    || icon_bytes.len() > MAX_REMOTE_RESPONSE_BYTES as usize
-  {
-    send_notification_internal(app, title, body, String::new(), additional_data);
-    return;
-  }
+  let icon_bytes = match res.bytes().await {
+    Ok(bytes) if bytes.len() <= MAX_REMOTE_RESPONSE_BYTES as usize => bytes.to_vec(),
+    _ => {
+      send_notification_internal(app, title, body, String::new(), additional_data);
+      return;
+    }
+  };
 
   // Then write it to a temp file
   let mut tmp_file = std::env::temp_dir();

@@ -1,4 +1,4 @@
-use std::{fs, io::Read};
+use std::fs;
 
 use crate::{
   config::get_config,
@@ -72,7 +72,7 @@ pub fn get_enabled_themes() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub fn theme_from_link(link: String, filename: Option<String>) -> Result<String, String> {
+pub async fn theme_from_link(link: String, filename: Option<String>) -> Result<String, String> {
   let link = validate_http_url(&link)?;
   let name = filename.unwrap_or_else(|| {
     link
@@ -84,13 +84,14 @@ pub fn theme_from_link(link: String, filename: Option<String>) -> Result<String,
   });
   let filename = normalize_css_file_name(&name)?;
 
-  let client = reqwest::blocking::Client::builder()
+  let client = reqwest::Client::builder()
     .redirect(reqwest::redirect::Policy::none())
     .build()
     .map_err(|error| format!("Failed to create HTTP client: {error}"))?;
   let response = client
     .get(link)
     .send()
+    .await
     .map_err(|error| format!("Failed to fetch theme: {error}"))?;
 
   if !response.status().is_success() {
@@ -107,10 +108,9 @@ pub fn theme_from_link(link: String, filename: Option<String>) -> Result<String,
     return Err("Theme is too large".to_string());
   }
 
-  let mut theme = String::new();
-  response
-    .take(MAX_CSS_BYTES as u64 + 1)
-    .read_to_string(&mut theme)
+  let theme = response
+    .text()
+    .await
     .map_err(|error| format!("Failed to read theme: {error}"))?;
   validate_payload_size(&theme, MAX_CSS_BYTES, "Theme")?;
 

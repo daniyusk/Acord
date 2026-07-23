@@ -65,7 +65,7 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
     .collect();
 
   let mut tasks = Vec::new();
-  let client = match reqwest::blocking::Client::builder()
+  let client = match reqwest::Client::builder()
     .redirect(reqwest::redirect::Policy::none())
     .build()
   {
@@ -131,7 +131,7 @@ pub fn localize_imports(win: tauri::WebviewWindow, css: String, name: String) ->
     tasks.push(std::thread::spawn(move || {
       log!("Getting: {}", &url_clone);
 
-      let response = match client.get(request_url).send() {
+      let response = match tauri::async_runtime::block_on(async { client.get(request_url).send().await }) {
         Ok(r) => r,
         Err(e) => {
           log!("Request failed: {}", e);
@@ -311,7 +311,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
     return new_css;
   }
 
-  let client = match reqwest::blocking::Client::builder()
+  let client = match reqwest::Client::builder()
     .redirect(reqwest::redirect::Policy::none())
     .build()
   {
@@ -383,7 +383,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
     tasks.push(std::thread::spawn(move || {
       log!("Getting: {}", &url_clone);
 
-      let response = match client.get(request_url).send() {
+      let response = match tauri::async_runtime::block_on(async { client.get(request_url).send().await }) {
         Ok(r) => r,
         Err(e) => {
           log!("Request failed: {}", e);
@@ -405,7 +405,7 @@ pub fn localize_images(win: tauri::WebviewWindow, css: String) -> String {
         return None;
       }
 
-      let bytes = match response.bytes() {
+      let bytes = match tauri::async_runtime::block_on(async { response.bytes().await }) {
         Ok(bytes) if bytes.len() <= MAX_REMOTE_RESPONSE_BYTES as usize => bytes,
         _ => return None,
       };
