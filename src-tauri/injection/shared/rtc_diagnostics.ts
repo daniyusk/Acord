@@ -30,7 +30,7 @@ type RtcTotals = {
 type PreviousSample = Pick<RtcTotals, 'inboundBytes' | 'outboundBytes'> & { timestamp: number }
 
 const SAMPLE_INTERVAL_MS = 15_000
-const trackedConnections = new Set<RTCPeerConnection>()
+const trackedConnections = new Set<WeakRef<RTCPeerConnection>>()
 
 function numberValue(report: RtcReport, key: string): number {
   const value = report[key]
@@ -46,10 +46,11 @@ function isVideoReport(report: RtcReport): boolean {
 }
 
 function track(connection: RTCPeerConnection) {
-  trackedConnections.add(connection)
+  const ref = new WeakRef(connection)
+  trackedConnections.add(ref)
   const removeClosedConnection = () => {
     if (connection.connectionState === 'closed' || connection.iceConnectionState === 'closed') {
-      trackedConnections.delete(connection)
+      trackedConnections.delete(ref)
     }
   }
 
@@ -84,7 +85,13 @@ async function collectTotals(): Promise<RtcTotals> {
     framesDropped: 0,
   }
 
-  for (const connection of trackedConnections) {
+  for (const ref of trackedConnections) {
+    const connection = ref.deref()
+    if (!connection || connection.connectionState === 'closed' || connection.iceConnectionState === 'closed') {
+      trackedConnections.delete(ref)
+      continue
+    }
+
     const stats = await connection.getStats().catch(() => undefined)
     if (!stats) continue
 
@@ -129,8 +136,19 @@ export function startRtcDiagnostics() {
     const totals = await collectTotals()
     const timestamp = performance.now()
     const elapsedMilliseconds = previous ? timestamp - previous.timestamp : 0
+
+    let activePeerConnections = 0
+    for (const ref of trackedConnections) {
+      const connection = ref.deref()
+      if (!connection || connection.connectionState === 'closed' || connection.iceConnectionState === 'closed') {
+        trackedConnections.delete(ref)
+      } else {
+        activePeerConnections++
+      }
+    }
+
     const sample: RtcDiagnosticsSample = {
-      peerConnections: trackedConnections.size,
+      peerConnections: activePeerConnections,
       inboundVideoStreams: totals.inboundVideoStreams,
       outboundVideoStreams: totals.outboundVideoStreams,
       inboundBitrateBps: previous ? bitrate(totals.inboundBytes, previous.inboundBytes, elapsedMilliseconds) : 0,
